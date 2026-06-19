@@ -23,6 +23,7 @@ class OrmanPazarApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: AppConstants.cream,
+        fontFamily: 'Roboto',
         colorScheme: ColorScheme.fromSeed(
           seedColor: AppConstants.forestGreen,
           primary: AppConstants.forestGreen,
@@ -31,20 +32,47 @@ class OrmanPazarApp extends StatelessWidget {
         ),
         appBarTheme: const AppBarTheme(
           centerTitle: false,
-          backgroundColor: AppConstants.forestGreen,
+          backgroundColor: AppConstants.deepGreen,
           foregroundColor: Colors.white,
           elevation: 0,
         ),
         cardTheme: CardThemeData(
           color: AppConstants.cardBackground,
-          elevation: 1,
+          elevation: 0,
           margin: EdgeInsets.zero,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 14,
+            vertical: 14,
+          ),
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(color: AppConstants.border),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: const BorderSide(
+              color: AppConstants.forestGreen,
+              width: 1.5,
+            ),
+          ),
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            minimumSize: const Size.fromHeight(48),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: AppConstants.forestGreen,
+          foregroundColor: Colors.white,
         ),
       ),
       home: const HomeScreen(),

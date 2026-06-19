@@ -87,7 +87,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('İlan kaydedildi')));
+      ).showSnackBar(const SnackBar(content: Text('Ilan kaydedildi')));
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) {
@@ -96,7 +96,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('İlan kaydedilemedi: $error')));
+      ).showSnackBar(SnackBar(content: Text('Ilan kaydedilemedi: $error')));
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -121,7 +121,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
     }
     final number = double.tryParse(value.trim().replaceAll(',', '.'));
     if (number == null || number <= 0) {
-      return 'Geçerli bir sayı gir';
+      return 'Gecerli bir sayi gir';
     }
     return null;
   }
@@ -129,105 +129,116 @@ class _AddListingScreenState extends State<AddListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('İlan ekle')),
+      appBar: AppBar(title: const Text('Ilan ekle')),
       body: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              _SectionTitle('Ürün bilgileri'),
-              TextFormField(
-                controller: _titleController,
-                decoration: const InputDecoration(labelText: 'Başlık'),
-                validator: _requiredValidator,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(labelText: 'Açıklama'),
-                minLines: 3,
-                maxLines: 5,
-                validator: _requiredValidator,
-              ),
-              const SizedBox(height: 12),
-              _DropdownField(
-                label: 'Kategori',
-                value: _category,
-                items: AppConstants.categories,
-                onChanged: (value) => setState(() => _category = value),
-              ),
-              const SizedBox(height: 12),
-              _DropdownField(
-                label: 'Ağaç türü',
-                value: _woodType,
-                items: AppConstants.woodTypes,
-                onChanged: (value) => setState(() => _woodType = value),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              _FormPanel(
+                title: 'Urun bilgileri',
                 children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _amountController,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: 'Miktar'),
-                      validator: _numberValidator,
-                    ),
+                  TextFormField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(labelText: 'Baslik'),
+                    validator: _requiredValidator,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _DropdownField(
-                      label: 'Ölçü birimi',
-                      value: _unit,
-                      items: AppConstants.units,
-                      onChanged: (value) => setState(() => _unit = value),
-                    ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(labelText: 'Aciklama'),
+                    minLines: 3,
+                    maxLines: 5,
+                    validator: _requiredValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  _DropdownField(
+                    label: 'Kategori',
+                    value: _category,
+                    items: AppConstants.categories,
+                    onChanged: (value) => setState(() => _category = value),
+                  ),
+                  const SizedBox(height: 12),
+                  _DropdownField(
+                    label: 'Agac turu',
+                    value: _woodType,
+                    items: AppConstants.woodTypes,
+                    onChanged: (value) => setState(() => _woodType = value),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: TextFormField(
+                          controller: _amountController,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Miktar',
+                          ),
+                          validator: _numberValidator,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _DropdownField(
+                          label: 'Olcu birimi',
+                          value: _unit,
+                          items: AppConstants.units,
+                          onChanged: (value) => setState(() => _unit = value),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(labelText: 'Fiyat'),
+                    validator: _numberValidator,
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _priceController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Fiyat'),
-                validator: _numberValidator,
-              ),
-              const SizedBox(height: 20),
-              _SectionTitle('Konum ve satış'),
-              TextFormField(
-                controller: _cityController,
-                decoration: const InputDecoration(labelText: 'Şehir'),
-                validator: _requiredValidator,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _districtController,
-                decoration: const InputDecoration(labelText: 'İlçe'),
-                validator: _requiredValidator,
-              ),
-              const SizedBox(height: 12),
-              _DropdownField(
-                label: 'Nem durumu',
-                value: _moistureStatus,
-                items: AppConstants.moistureStatuses,
-                onChanged: (value) => setState(() => _moistureStatus = value),
-              ),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                value: _hasDelivery,
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Nakliye var mı?'),
-                activeThumbColor: AppConstants.forestGreen,
-                onChanged: (value) => setState(() => _hasDelivery = value),
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(labelText: 'Telefon'),
-                validator: _requiredValidator,
+              const SizedBox(height: 14),
+              _FormPanel(
+                title: 'Konum ve satis',
+                children: [
+                  TextFormField(
+                    controller: _cityController,
+                    decoration: const InputDecoration(labelText: 'Sehir'),
+                    validator: _requiredValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _districtController,
+                    decoration: const InputDecoration(labelText: 'Ilce'),
+                    validator: _requiredValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  _DropdownField(
+                    label: 'Nem durumu',
+                    value: _moistureStatus,
+                    items: AppConstants.moistureStatuses,
+                    onChanged: (value) =>
+                        setState(() => _moistureStatus = value),
+                  ),
+                  const SizedBox(height: 12),
+                  SwitchListTile(
+                    value: _hasDelivery,
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Nakliye var mi?'),
+                    activeThumbColor: AppConstants.forestGreen,
+                    onChanged: (value) => setState(() => _hasDelivery = value),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(labelText: 'Telefon'),
+                    validator: _requiredValidator,
+                  ),
+                ],
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
@@ -249,21 +260,34 @@ class _AddListingScreenState extends State<AddListingScreen> {
   }
 }
 
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.text);
+class _FormPanel extends StatelessWidget {
+  const _FormPanel({required this.title, required this.children});
 
-  final String text;
+  final String title;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-          color: AppConstants.forestGreen,
-          fontWeight: FontWeight.w700,
-        ),
+    return Container(
+      decoration: BoxDecoration(
+        color: AppConstants.cardBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.border),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppConstants.forestGreen,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...children,
+        ],
       ),
     );
   }

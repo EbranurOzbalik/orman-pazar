@@ -11,11 +11,17 @@ class ListingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Material(
+      color: AppConstants.cardBackground,
+      borderRadius: BorderRadius.circular(8),
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: onTap,
-        child: Padding(
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppConstants.border),
+          ),
           padding: const EdgeInsets.all(14),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -24,10 +30,10 @@ class ListingCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     decoration: BoxDecoration(
-                      color: AppConstants.leafGreen.withValues(alpha: 0.12),
+                      color: AppConstants.mossGreen,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Icon(
@@ -42,19 +48,45 @@ class ListingCard extends StatelessWidget {
                       children: [
                         Text(
                           listing.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(fontWeight: FontWeight.w700),
+                              ?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: AppConstants.deepGreen,
+                              ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${listing.city} / ${listing.district}',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: AppConstants.mutedText),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 16,
+                              color: AppConstants.mutedText,
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                '${listing.city} / ${listing.district}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: AppConstants.mutedText,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.chevron_right),
+                  const SizedBox(width: 8),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: AppConstants.mutedText,
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -65,24 +97,24 @@ class ListingCard extends StatelessWidget {
                   _InfoChip(text: listing.category),
                   _InfoChip(text: listing.woodType),
                   _InfoChip(text: listing.moistureStatus),
+                  if (listing.hasDelivery) const _InfoChip(text: 'Nakliye'),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      '${_formatNumber(listing.amount)} ${listing.unit}',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                    child: _Metric(
+                      label: 'Miktar',
+                      value: '${_formatNumber(listing.amount)} ${listing.unit}',
                     ),
                   ),
+                  const SizedBox(width: 12),
                   Text(
                     '${_formatNumber(listing.price)} TL',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       color: AppConstants.woodBrown,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w900,
                     ),
                   ),
                 ],
@@ -102,6 +134,37 @@ class ListingCard extends StatelessWidget {
   }
 }
 
+class _Metric extends StatelessWidget {
+  const _Metric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: AppConstants.mutedText,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          value,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppConstants.deepGreen,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _InfoChip extends StatelessWidget {
   const _InfoChip({required this.text});
 
@@ -112,17 +175,14 @@ class _InfoChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: AppConstants.cream,
+        color: AppConstants.mossGreen,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: AppConstants.leafGreen.withValues(alpha: 0.2),
-        ),
       ),
       child: Text(
         text,
         style: Theme.of(context).textTheme.labelMedium?.copyWith(
           color: AppConstants.forestGreen,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

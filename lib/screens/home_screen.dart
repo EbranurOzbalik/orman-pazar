@@ -91,16 +91,19 @@ class _HomeScreenState extends State<HomeScreen> {
             title: const Text(AppConstants.appName),
             actions: [
               if (user == null)
-                TextButton.icon(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    );
-                  },
-                  icon: const Icon(Icons.login, color: Colors.white),
-                  label: const Text(
-                    'Giris',
-                    style: TextStyle(color: Colors.white),
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: TextButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.login, color: Colors.white),
+                    label: const Text(
+                      'Giris',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 )
               else
@@ -188,11 +191,27 @@ class _SearchAndFilters extends StatelessWidget {
     final categories = [AppConstants.allCategories, ...AppConstants.categories];
 
     return Container(
-      color: AppConstants.cream,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      color: AppConstants.deepGreen,
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Text(
+            'Orman urunleri pazari',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Odun, tomruk, kereste ve talas ilanlarini kesfet.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.white.withValues(alpha: 0.78),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 14),
           TextField(
             controller: controller,
             decoration: const InputDecoration(
@@ -216,12 +235,17 @@ class _SearchAndFilters extends StatelessWidget {
                   label: Text(category),
                   selected: isSelected,
                   onSelected: (_) => onCategorySelected(category),
-                  selectedColor: AppConstants.forestGreen,
+                  selectedColor: AppConstants.amber,
+                  backgroundColor: Colors.white,
                   labelStyle: TextStyle(
-                    color: isSelected ? Colors.white : AppConstants.forestGreen,
+                    color: isSelected
+                        ? AppConstants.deepGreen
+                        : AppConstants.forestGreen,
                     fontWeight: FontWeight.w600,
                   ),
-                  side: const BorderSide(color: AppConstants.leafGreen),
+                  side: BorderSide(
+                    color: isSelected ? AppConstants.amber : Colors.white,
+                  ),
                 );
               },
             ),
@@ -262,7 +286,7 @@ class _ListingsContent extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 96),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
       itemCount: listings.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {

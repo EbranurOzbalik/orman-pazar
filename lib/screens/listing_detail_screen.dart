@@ -11,82 +11,115 @@ class ListingDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('İlan detayı')),
+      appBar: AppBar(title: const Text('Ilan detayi')),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    listing.title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: AppConstants.forestGreen,
-                      fontWeight: FontWeight.w700,
+          Container(
+            decoration: BoxDecoration(
+              color: AppConstants.deepGreen,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.all(18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  listing.category,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: AppConstants.amber,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  listing.title,
+                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      color: Colors.white70,
+                      size: 18,
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    listing.description,
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
-                ],
-              ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        '${listing.city} / ${listing.district}',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _DetailRow(
-                    icon: Icons.payments_outlined,
-                    label: 'Fiyat',
-                    value: '${_formatNumber(listing.price)} TL',
-                  ),
-                  _DetailRow(
-                    icon: Icons.inventory_2_outlined,
-                    label: 'Miktar',
-                    value: '${_formatNumber(listing.amount)} ${listing.unit}',
-                  ),
-                  _DetailRow(
-                    icon: Icons.location_on_outlined,
-                    label: 'Konum',
-                    value: '${listing.city} / ${listing.district}',
-                  ),
-                  _DetailRow(
-                    icon: Icons.category_outlined,
-                    label: 'Kategori',
-                    value: listing.category,
-                  ),
-                  _DetailRow(
-                    icon: Icons.park_outlined,
-                    label: 'Ağaç türü',
-                    value: listing.woodType,
-                  ),
-                  _DetailRow(
-                    icon: Icons.water_drop_outlined,
-                    label: 'Nem durumu',
-                    value: listing.moistureStatus,
-                  ),
-                  _DetailRow(
-                    icon: Icons.local_shipping_outlined,
-                    label: 'Nakliye',
-                    value: listing.hasDelivery ? 'Var' : 'Yok',
-                  ),
-                  _DetailRow(
-                    icon: Icons.phone_outlined,
-                    label: 'Telefon',
-                    value: listing.phone,
-                    isLast: true,
-                  ),
-                ],
+          _InfoPanel(
+            children: [
+              _DetailRow(
+                icon: Icons.payments_outlined,
+                label: 'Fiyat',
+                value: '${_formatNumber(listing.price)} TL',
               ),
-            ),
+              _DetailRow(
+                icon: Icons.inventory_2_outlined,
+                label: 'Miktar',
+                value: '${_formatNumber(listing.amount)} ${listing.unit}',
+              ),
+              _DetailRow(
+                icon: Icons.park_outlined,
+                label: 'Agac turu',
+                value: listing.woodType,
+              ),
+              _DetailRow(
+                icon: Icons.water_drop_outlined,
+                label: 'Nem durumu',
+                value: listing.moistureStatus,
+              ),
+              _DetailRow(
+                icon: Icons.local_shipping_outlined,
+                label: 'Nakliye',
+                value: listing.hasDelivery ? 'Var' : 'Yok',
+              ),
+              _DetailRow(
+                icon: Icons.phone_outlined,
+                label: 'Telefon',
+                value: listing.phone,
+                isLast: true,
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _InfoPanel(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Aciklama',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppConstants.deepGreen,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                listing.description,
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                  color: AppConstants.deepGreen,
+                  height: 1.35,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -98,6 +131,25 @@ class ListingDetailScreen extends StatelessWidget {
       return value.toStringAsFixed(0);
     }
     return value.toStringAsFixed(2);
+  }
+}
+
+class _InfoPanel extends StatelessWidget {
+  const _InfoPanel({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppConstants.cardBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.border),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(children: children),
+    );
   }
 }
 
@@ -121,7 +173,15 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: AppConstants.leafGreen),
+          Container(
+            width: 34,
+            height: 34,
+            decoration: BoxDecoration(
+              color: AppConstants.mossGreen,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: AppConstants.forestGreen, size: 19),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -131,14 +191,16 @@ class _DetailRow extends StatelessWidget {
                   label,
                   style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     color: AppConstants.mutedText,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: AppConstants.deepGreen,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
               ],
             ),

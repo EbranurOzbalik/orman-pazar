@@ -6,32 +6,36 @@ class AppConstants {
   static const String appName = 'Orman Pazar';
   static const String listingsCollection = 'listings';
   static const String temporarySellerId = 'test-user';
-  static const String allCategories = 'Tümü';
+  static const String allCategories = 'Tumu';
 
   static const List<String> categories = [
     'Yakacak Odun',
     'Kereste',
     'Tomruk',
-    'Talaş',
-    'Diğer',
+    'Talas',
+    'Diger',
   ];
 
   static const List<String> woodTypes = [
-    'Meşe',
-    'Çam',
-    'Gürgen',
-    'Kayın',
-    'Diğer',
+    'Mese',
+    'Cam',
+    'Gurgen',
+    'Kayin',
+    'Diger',
   ];
 
-  static const List<String> units = ['kg', 'ton', 'ster', 'm³', 'çuval'];
+  static const List<String> units = ['kg', 'ton', 'ster', 'm3', 'cuval'];
 
-  static const List<String> moistureStatuses = ['Kuru', 'Yaş', 'Karışık'];
+  static const List<String> moistureStatuses = ['Kuru', 'Yas', 'Karisik'];
 
-  static const Color forestGreen = Color(0xFF285A36);
-  static const Color leafGreen = Color(0xFF4F7F45);
-  static const Color cream = Color(0xFFF6F1E7);
-  static const Color cardBackground = Color(0xFFFFFCF5);
+  static const Color forestGreen = Color(0xFF244E34);
+  static const Color deepGreen = Color(0xFF163323);
+  static const Color leafGreen = Color(0xFF5D8B4E);
+  static const Color mossGreen = Color(0xFFDDE8D4);
+  static const Color cream = Color(0xFFF7F2E8);
+  static const Color cardBackground = Color(0xFFFFFCF6);
   static const Color woodBrown = Color(0xFF7A5634);
+  static const Color amber = Color(0xFFE2A94B);
   static const Color mutedText = Color(0xFF6D6A61);
+  static const Color border = Color(0xFFE7DDCD);
 }

@@ -1,11 +1,14 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
 import '../models/listing_model.dart';
+import '../services/auth_service.dart';
 import '../services/listing_service.dart';
 import '../widgets/listing_card.dart';
 import 'add_listing_screen.dart';
 import 'listing_detail_screen.dart';
+import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final ListingService _listingService = ListingService();
+  final AuthService _authService = AuthService();
   final TextEditingController _searchController = TextEditingController();
 
   String _selectedCategory = AppConstants.allCategories;
@@ -50,66 +54,118 @@ class _HomeScreenState extends State<HomeScreen> {
     }).toList();
   }
 
+  void _openAddListing(User? user) {
+    if (user == null) {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const AddListingScreen()));
+  }
+
+  Future<void> _signOut() async {
+    await _authService.signOut();
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Cikis yapildi')));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text(AppConstants.appName)),
-      body: StreamBuilder<List<ListingModel>>(
-        stream: _listingService.getListings(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const _LoadingState();
-          }
+    return StreamBuilder<User?>(
+      stream: _authService.authStateChanges,
+      builder: (context, authSnapshot) {
+        final user = authSnapshot.data;
 
-          if (snapshot.hasError) {
-            return _StateMessage(
-              icon: Icons.error_outline,
-              title: 'İlanlar yüklenemedi',
-              message: snapshot.error.toString(),
-            );
-          }
-
-          final allListings = snapshot.data ?? [];
-          final filteredListings = _filterListings(allListings);
-
-          return Column(
-            children: [
-              _SearchAndFilters(
-                controller: _searchController,
-                selectedCategory: _selectedCategory,
-                onSearchChanged: (value) {
-                  setState(() => _searchText = value);
-                },
-                onCategorySelected: (category) {
-                  setState(() => _selectedCategory = category);
-                },
-              ),
-              Expanded(
-                child: _ListingsContent(
-                  listings: filteredListings,
-                  hasAnyListing: allListings.isNotEmpty,
-                  onOpenListing: (listing) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text(AppConstants.appName),
+            actions: [
+              if (user == null)
+                TextButton.icon(
+                  onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => ListingDetailScreen(listing: listing),
-                      ),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
                     );
                   },
+                  icon: const Icon(Icons.login, color: Colors.white),
+                  label: const Text(
+                    'Giris',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                )
+              else
+                IconButton(
+                  tooltip: 'Cikis yap',
+                  onPressed: _signOut,
+                  icon: const Icon(Icons.logout),
                 ),
-              ),
             ],
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (_) => const AddListingScreen()));
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('İlan ekle'),
-      ),
+          ),
+          body: StreamBuilder<List<ListingModel>>(
+            stream: _listingService.getListings(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const _LoadingState();
+              }
+
+              if (snapshot.hasError) {
+                return _StateMessage(
+                  icon: Icons.error_outline,
+                  title: 'Ilanlar yuklenemedi',
+                  message: snapshot.error.toString(),
+                );
+              }
+
+              final allListings = snapshot.data ?? [];
+              final filteredListings = _filterListings(allListings);
+
+              return Column(
+                children: [
+                  _SearchAndFilters(
+                    controller: _searchController,
+                    selectedCategory: _selectedCategory,
+                    onSearchChanged: (value) {
+                      setState(() => _searchText = value);
+                    },
+                    onCategorySelected: (category) {
+                      setState(() => _selectedCategory = category);
+                    },
+                  ),
+                  Expanded(
+                    child: _ListingsContent(
+                      listings: filteredListings,
+                      hasAnyListing: allListings.isNotEmpty,
+                      onOpenListing: (listing) {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                ListingDetailScreen(listing: listing),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => _openAddListing(user),
+            icon: const Icon(Icons.add),
+            label: const Text('Ilan ekle'),
+          ),
+        );
+      },
     );
   }
 }
@@ -140,7 +196,7 @@ class _SearchAndFilters extends StatelessWidget {
           TextField(
             controller: controller,
             decoration: const InputDecoration(
-              hintText: 'Başlık, şehir veya ağaç türü ara',
+              hintText: 'Baslik, sehir veya agac turu ara',
               prefixIcon: Icon(Icons.search),
             ),
             onChanged: onSearchChanged,
@@ -192,16 +248,16 @@ class _ListingsContent extends StatelessWidget {
     if (!hasAnyListing) {
       return const _StateMessage(
         icon: Icons.forest_outlined,
-        title: 'Henüz ilan yok',
-        message: 'İlk orman ürünleri ilanını ekleyerek başlayabilirsin.',
+        title: 'Henuz ilan yok',
+        message: 'Ilk orman urunleri ilanini ekleyerek baslayabilirsin.',
       );
     }
 
     if (listings.isEmpty) {
       return const _StateMessage(
         icon: Icons.filter_alt_off_outlined,
-        title: 'Sonuç bulunamadı',
-        message: 'Arama veya kategori filtresini değiştirerek tekrar dene.',
+        title: 'Sonuc bulunamadi',
+        message: 'Arama veya kategori filtresini degistirerek tekrar dene.',
       );
     }
 
@@ -232,7 +288,7 @@ class _LoadingState extends StatelessWidget {
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 12),
-          Text('İlanlar yükleniyor...'),
+          Text('Ilanlar yukleniyor...'),
         ],
       ),
     );

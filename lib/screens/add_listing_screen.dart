@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
 import '../models/listing_model.dart';
+import '../services/auth_service.dart';
 import '../services/listing_service.dart';
 
 class AddListingScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
   final _phoneController = TextEditingController();
 
   final ListingService _listingService = ListingService();
+  final AuthService _authService = AuthService();
 
   String _category = AppConstants.categories.first;
   String _woodType = AppConstants.woodTypes.first;
@@ -47,6 +49,15 @@ class _AddListingScreenState extends State<AddListingScreen> {
       return;
     }
 
+    final user = _authService.currentUser;
+
+    if (user == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Ilan eklemek icin giris yapmalisin')),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     final listing = ListingModel(
@@ -63,7 +74,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
       moistureStatus: _moistureStatus,
       hasDelivery: _hasDelivery,
       phone: _phoneController.text.trim(),
-      sellerId: AppConstants.temporarySellerId,
+      sellerId: user.uid,
       createdAt: DateTime.now(),
     );
 

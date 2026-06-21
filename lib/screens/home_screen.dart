@@ -9,6 +9,7 @@ import '../widgets/listing_card.dart';
 import 'add_listing_screen.dart';
 import 'listing_detail_screen.dart';
 import 'login_screen.dart';
+import 'my_listings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -107,10 +108,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 )
               else
-                IconButton(
-                  tooltip: 'Cikis yap',
-                  onPressed: _signOut,
-                  icon: const Icon(Icons.logout),
+                Row(
+                  children: [
+                    IconButton(
+                      tooltip: 'Benim ilanlarim',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => MyListingsScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.inventory_2_outlined),
+                    ),
+                    IconButton(
+                      tooltip: 'Cikis yap',
+                      onPressed: _signOut,
+                      icon: const Icon(Icons.logout),
+                    ),
+                  ],
                 ),
             ],
           ),

@@ -2,16 +2,119 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
 import '../models/listing_model.dart';
+import '../services/auth_service.dart';
+import '../services/listing_service.dart';
+import 'edit_listing_screen.dart';
 
 class ListingDetailScreen extends StatelessWidget {
-  const ListingDetailScreen({super.key, required this.listing});
+  ListingDetailScreen({super.key, required this.listing});
 
   final ListingModel listing;
+  final AuthService _authService = AuthService();
+  final ListingService _listingService = ListingService();
+
+  Future<void> _openEditScreen(BuildContext context) async {
+    final wasUpdated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(builder: (_) => EditListingScreen(listing: listing)),
+    );
+
+    if (wasUpdated == true && context.mounted) {
+      Navigator.of(context).pop();
+    }
+  }
+
+  Future<void> _deleteListing(BuildContext context) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Ilani sil'),
+          content: const Text('Bu ilani silmek istedigine emin misin?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Vazgec'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: FilledButton.styleFrom(backgroundColor: Colors.redAccent),
+              child: const Text('Sil'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldDelete != true) {
+      return;
+    }
+
+    try {
+      await _listingService.deleteListing(listing.id);
+
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Ilan silindi')));
+      Navigator.of(context).pop();
+    } catch (error) {
+      if (!context.mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Ilan silinemedi: $error')));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final user = _authService.currentUser;
+    final isOwner = user != null && user.uid == listing.sellerId;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Ilan detayi')),
+      appBar: AppBar(
+        title: const Text('Ilan detayi'),
+        actions: [
+          if (isOwner)
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'edit') {
+                  _openEditScreen(context);
+                }
+                if (value == 'delete') {
+                  _deleteListing(context);
+                }
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(
+                  value: 'edit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.edit_outlined),
+                      SizedBox(width: 8),
+                      Text('Duzenle'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete_outline, color: Colors.redAccent),
+                      SizedBox(width: 8),
+                      Text('Sil'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+        ],
+      ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [

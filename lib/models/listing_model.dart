@@ -37,6 +37,42 @@ class ListingModel {
 
   // Firestore'a yazılacak sade Map yapısı. id alanını belge id'si olarak
   // tuttuğumuz için map içine eklemiyoruz.
+  ListingModel copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? category,
+    String? woodType,
+    double? amount,
+    String? unit,
+    double? price,
+    String? city,
+    String? district,
+    String? moistureStatus,
+    bool? hasDelivery,
+    String? phone,
+    String? sellerId,
+    DateTime? createdAt,
+  }) {
+    return ListingModel(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      category: category ?? this.category,
+      woodType: woodType ?? this.woodType,
+      amount: amount ?? this.amount,
+      unit: unit ?? this.unit,
+      price: price ?? this.price,
+      city: city ?? this.city,
+      district: district ?? this.district,
+      moistureStatus: moistureStatus ?? this.moistureStatus,
+      hasDelivery: hasDelivery ?? this.hasDelivery,
+      phone: phone ?? this.phone,
+      sellerId: sellerId ?? this.sellerId,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'title': title,

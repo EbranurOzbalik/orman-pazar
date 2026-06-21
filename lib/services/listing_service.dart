@@ -32,6 +32,22 @@ class ListingService {
         });
   }
 
+  // Giris yapan kullanicinin kendi ilanlarini canli dinler.
+  // Siralamayi uygulama icinde yapiyoruz; bu sekilde ek Firestore index gerekmez.
+  Stream<List<ListingModel>> getListingsBySeller(String sellerId) {
+    return _listingsCollection
+        .where('sellerId', isEqualTo: sellerId)
+        .snapshots()
+        .map((snapshot) {
+          final listings = snapshot.docs.map((doc) {
+            return ListingModel.fromMap(doc.id, doc.data());
+          }).toList();
+
+          listings.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return listings;
+        });
+  }
+
   Future<ListingModel?> getListingById(String id) async {
     final doc = await _listingsCollection.doc(id).get();
 
@@ -40,5 +56,17 @@ class ListingService {
     }
 
     return ListingModel.fromMap(doc.id, doc.data()!);
+  }
+
+  Future<void> updateListing(ListingModel listing) async {
+    if (listing.id.isEmpty) {
+      throw ArgumentError('Guncellenecek ilanin id bilgisi yok.');
+    }
+
+    await _listingsCollection.doc(listing.id).update(listing.toMap());
+  }
+
+  Future<void> deleteListing(String id) async {
+    await _listingsCollection.doc(id).delete();
   }
 }

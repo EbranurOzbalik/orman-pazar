@@ -115,6 +115,62 @@ class _AddListingScreenState extends State<AddListingScreen> {
     return null;
   }
 
+  String? _titleValidator(String? value) {
+    final requiredError = _requiredValidator(value);
+    if (requiredError != null) {
+      return requiredError;
+    }
+    if (value!.trim().length < 3) {
+      return 'Baslik en az 3 karakter olmali';
+    }
+    return null;
+  }
+
+  String? _descriptionValidator(String? value) {
+    final requiredError = _requiredValidator(value);
+    if (requiredError != null) {
+      return requiredError;
+    }
+    if (value!.trim().length < 10) {
+      return 'Aciklama en az 10 karakter olmali';
+    }
+    return null;
+  }
+
+  String? _cityValidator(String? value) {
+    final requiredError = _requiredValidator(value);
+    if (requiredError != null) {
+      return requiredError;
+    }
+    if (value!.trim().length < 2) {
+      return 'Sehir adini kontrol et';
+    }
+    return null;
+  }
+
+  String? _districtValidator(String? value) {
+    final requiredError = _requiredValidator(value);
+    if (requiredError != null) {
+      return requiredError;
+    }
+    if (value!.trim().length < 2) {
+      return 'Ilce adini kontrol et';
+    }
+    return null;
+  }
+
+  String? _phoneValidator(String? value) {
+    final requiredError = _requiredValidator(value);
+    if (requiredError != null) {
+      return requiredError;
+    }
+    final digits = value!.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 10) {
+      return 'Telefon en az 10 rakam olmali';
+    }
+    return null;
+  }
+
   String? _numberValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
       return 'Bu alan zorunlu';
@@ -142,7 +198,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                   TextFormField(
                     controller: _titleController,
                     decoration: const InputDecoration(labelText: 'Baslik'),
-                    validator: _requiredValidator,
+                    validator: _titleValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
@@ -150,7 +206,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                     decoration: const InputDecoration(labelText: 'Aciklama'),
                     minLines: 3,
                     maxLines: 5,
-                    validator: _requiredValidator,
+                    validator: _descriptionValidator,
                   ),
                   const SizedBox(height: 12),
                   _DropdownField(
@@ -207,13 +263,13 @@ class _AddListingScreenState extends State<AddListingScreen> {
                   TextFormField(
                     controller: _cityController,
                     decoration: const InputDecoration(labelText: 'Sehir'),
-                    validator: _requiredValidator,
+                    validator: _cityValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _districtController,
                     decoration: const InputDecoration(labelText: 'Ilce'),
-                    validator: _requiredValidator,
+                    validator: _districtValidator,
                   ),
                   const SizedBox(height: 12),
                   _DropdownField(
@@ -236,7 +292,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(labelText: 'Telefon'),
-                    validator: _requiredValidator,
+                    validator: _phoneValidator,
                   ),
                 ],
               ),

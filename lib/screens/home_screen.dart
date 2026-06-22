@@ -24,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _searchController = TextEditingController();
 
   String _selectedCategory = AppConstants.allCategories;
+  String _selectedCity = AppConstants.allCities;
   String _searchText = '';
 
   @override
@@ -40,6 +41,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _selectedCategory == AppConstants.allCategories ||
           listing.category == _selectedCategory;
 
+      final matchesCity =
+          _selectedCity == AppConstants.allCities ||
+          listing.city == _selectedCity;
+
       final searchableText = [
         listing.title,
         listing.description,
@@ -51,8 +56,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final matchesSearch = query.isEmpty || searchableText.contains(query);
 
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesCity && matchesSearch;
     }).toList();
+  }
+
+  List<String> _getCities(List<ListingModel> listings) {
+    final cities =
+        listings
+            .map((listing) => listing.city.trim())
+            .where((city) => city.isNotEmpty)
+            .toSet()
+            .toList()
+          ..sort();
+
+    return [AppConstants.allCities, ...cities];
   }
 
   void _openAddListing(User? user) {
@@ -145,12 +162,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
               final allListings = snapshot.data ?? [];
               final filteredListings = _filterListings(allListings);
+              final cities = _getCities(allListings);
+
+              if (!cities.contains(_selectedCity)) {
+                _selectedCity = AppConstants.allCities;
+              }
 
               return Column(
                 children: [
                   _SearchAndFilters(
                     controller: _searchController,
                     selectedCategory: _selectedCategory,
+                    selectedCity: _selectedCity,
+                    cities: cities,
                     listingCount: allListings.length,
                     visibleCount: filteredListings.length,
                     onSearchChanged: (value) {
@@ -158,6 +182,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     onCategorySelected: (category) {
                       setState(() => _selectedCategory = category);
+                    },
+                    onCitySelected: (city) {
+                      setState(() => _selectedCity = city);
                     },
                   ),
                   Expanded(
@@ -193,18 +220,24 @@ class _SearchAndFilters extends StatelessWidget {
   const _SearchAndFilters({
     required this.controller,
     required this.selectedCategory,
+    required this.selectedCity,
+    required this.cities,
     required this.listingCount,
     required this.visibleCount,
     required this.onSearchChanged,
     required this.onCategorySelected,
+    required this.onCitySelected,
   });
 
   final TextEditingController controller;
   final String selectedCategory;
+  final String selectedCity;
+  final List<String> cities;
   final int listingCount;
   final int visibleCount;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
+  final ValueChanged<String> onCitySelected;
 
   @override
   Widget build(BuildContext context) {
@@ -306,6 +339,12 @@ class _SearchAndFilters extends StatelessWidget {
             onChanged: onSearchChanged,
           ),
           const SizedBox(height: 12),
+          _CityFilter(
+            selectedCity: selectedCity,
+            cities: cities,
+            onCitySelected: onCitySelected,
+          ),
+          const SizedBox(height: 12),
           SizedBox(
             height: 42,
             child: ListView.separated(
@@ -362,6 +401,75 @@ class _SearchAndFilters extends StatelessWidget {
       default:
         return Icons.eco_outlined;
     }
+  }
+}
+
+class _CityFilter extends StatelessWidget {
+  const _CityFilter({
+    required this.selectedCity,
+    required this.cities,
+    required this.onCitySelected,
+  });
+
+  final String selectedCity;
+  final List<String> cities;
+  final ValueChanged<String> onCitySelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedCity,
+          isExpanded: true,
+          dropdownColor: AppConstants.cardBackground,
+          iconEnabledColor: Colors.white,
+          style: const TextStyle(
+            color: AppConstants.deepGreen,
+            fontWeight: FontWeight.w800,
+          ),
+          selectedItemBuilder: (context) {
+            return cities.map((city) {
+              return Row(
+                children: [
+                  const Icon(
+                    Icons.location_city_outlined,
+                    color: AppConstants.amber,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      city,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            }).toList();
+          },
+          items: cities.map((city) {
+            return DropdownMenuItem<String>(value: city, child: Text(city));
+          }).toList(),
+          onChanged: (value) {
+            if (value != null) {
+              onCitySelected(value);
+            }
+          },
+        ),
+      ),
+    );
   }
 }
 

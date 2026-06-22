@@ -1,37 +1,82 @@
 # Orman Pazar
 
-Orman Pazar, ormancilik urunleri icin gelistirilen Flutter tabanli bir mobil ilan uygulamasidir. Odun, kereste, tomruk, talas gibi urunleri satan kisiler ilan ekleyebilir; alicilar ilanlari listeleyip detaylarini gorebilir.
+Orman Pazar, ormancilik urunleri icin gelistirilen Flutter tabanli bir mobil ilan uygulamasidir. Odun, kereste, tomruk, talas gibi urunleri satan kisiler ilan ekleyebilir; alicilar ilanlari listeleyip detaylarini inceleyebilir.
 
-## Proje Durumu
+Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir Flutter projesi olarak hazirlanmistir.
 
-Bu repo su an ilk MVP gelistirme gunlerini icerir.
+## Kisa Ozet
 
-- Gun 1: Temel Flutter MVP iskeleti, ilan modeli, servis katmani, ana ekran, ilan ekleme ve detay ekrani.
-- Gun 2: Firebase Android baglantisi, Firestore hazirligi ve gercek veritabanina ilan yazma/listeleme akisi.
-- Gun 3: Ilan kesfi icin arama, kategori filtresi, bos durum ve hata durumlari.
-- Gun 4: Firebase Auth ile email/sifre giris-kayit akisi, ilan eklerken kullanici `uid` bilgisinin `sellerId` olarak kaydedilmesi.
-- Gun 5: Kullaniciya ait ilanlar ekrani, ilan duzenleme, ilan silme ve Firestore rules taslagi.
+| Alan | Durum |
+| --- | --- |
+| Platform | Flutter mobil uygulama |
+| Backend | Firebase / Cloud Firestore |
+| Auth | Firebase Authentication hazirligi |
+| Ana akis | Ilan ekleme, listeleme, detay, duzenleme, silme |
+| Tasarim | Orman temasina uygun modern pazar arayuzu |
+| Durum | MVP gelistirme asamasi |
 
-## Ozellikler
+## Temel Ozellikler
 
-- Ilan listeleme
-- Ilan detaylarini goruntuleme
-- Email/sifre ile kayit ve giris
-- Giris yapan kullanicinin ilan eklemesi
-- Kullanicinin kendi ilanlarini listelemesi
-- Sadece ilan sahibinin ilan duzenleyip silebilmesi
+- Ormancilik urunleri icin ilan listeleme
+- Ilan detayi goruntuleme
 - Kategoriye gore filtreleme
 - Baslik, aciklama, sehir, ilce ve agac turune gore arama
+- Email/sifre ile kayit ve giris altyapisi
+- Giris yapan kullanicinin ilan eklemesi
+- Kullanicinin kendi ilanlarini ayri ekranda gorebilmesi
+- Sadece ilan sahibinin ilan duzenleyip silebilmesi
+- Firestore rules taslagi
+- Modern ana ekran, ilan karti, detay ve auth ekranlari
 
-## Kullanilan Teknolojiler
+## Gelisim Gunlugu
 
-- Flutter
-- Dart
-- Firebase Core
-- Cloud Firestore
-- Firebase Authentication
+### Gun 1 - MVP Iskeleti
 
-## Klasor Yapisi
+- Flutter proje yapisi duzenlendi.
+- `ListingModel` olusturuldu.
+- Firestore islemleri icin `ListingService` ayrildi.
+- Ana ekran, ilan ekleme ekrani, ilan detay ekrani ve ilan karti eklendi.
+- Firebase kodlari ekranlarin icine dagitilmadan servis katmaninda toplandi.
+
+### Gun 2 - Firebase Android Baglantisi
+
+- Android Firebase baglantisi hazirlandi.
+- `google-services.json` yerelde projeye eklendi.
+- Firestore ile ilan ekleme ve listeleme akisi hazirlandi.
+- Gizli config dosyalarinin GitHub'a gitmemesi icin dikkat edildi.
+
+### Gun 3 - Ilan Kesfi
+
+- Arama alani eklendi.
+- Kategori filtreleri eklendi.
+- Bos liste, yukleniyor ve hata durumlari iyilestirildi.
+- Ana ekran daha kullanilir hale getirildi.
+
+### Gun 4 - Auth Akisi
+
+- Firebase Auth servisi eklendi.
+- Giris ve kayit ekranlari olusturuldu.
+- Ilan eklemek icin giris kontrolu eklendi.
+- `sellerId` degeri gecici kullanicidan Firebase kullanici `uid` degerine tasindi.
+
+### Gun 5 - Kullanici Ilan Yonetimi
+
+- Benim ilanlarim ekrani eklendi.
+- Ilan duzenleme ekrani eklendi.
+- Ilan silme akisi eklendi.
+- Sadece ilan sahibinin duzenleme/silme islemi yapmasi saglandi.
+- Form dogrulamalari guclendirildi.
+
+### Gun 6 - Tasarim Polish
+
+- Ana ekran daha guclu bir pazar paneline donusturuldu.
+- Toplam ve gorunen ilan sayaclari eklendi.
+- Kategori filtreleri ikonlandi.
+- Ilan kartlari kategoriye gore renk ve ikon alacak sekilde yenilendi.
+- Detay ekraninda fiyat ve miktar daha belirgin hale getirildi.
+- Giris ve kayit ekranlari marka paneli + form karti yapisina tasindi.
+
+## Teknik Yapi
 
 ```text
 lib/
@@ -55,15 +100,26 @@ lib/
   main.dart
 ```
 
-## Firebase Notlari
+## Kullanilan Teknolojiler
 
-Android Firebase baglantisi icin `android/app/google-services.json` dosyasi gerekir. Bu dosya guvenlik sebebiyle GitHub'a eklenmemelidir.
+- Flutter
+- Dart
+- Firebase Core
+- Cloud Firestore
+- Firebase Authentication
 
-Firebase Console tarafinda gerekenler:
+## Firebase Durumu
 
-- Cloud Firestore aktif olmali.
-- Authentication icinde Email/Password giris yontemi aktif olmali.
-- Firestore kurallari icin repodaki `firestore.rules` dosyasi taslak olarak kullanilabilir.
+Firebase kod tarafi projede hazirdir; Firebase Console ayarlari ayri olarak tamamlanmalidir.
+
+Gerekli Firebase Console adimlari:
+
+- Cloud Firestore aktif edilmeli.
+- Authentication icinde Email/Password giris yontemi aktif edilmeli.
+- Firestore Rules sekmesine `firestore.rules` dosyasindaki taslak kurallar uygulanmali.
+- Android icin `android/app/google-services.json` yerelde bulunmali.
+
+Not: `google-services.json` GitHub'a eklenmemelidir. Firebase config dosyalari API key icerdigi icin dikkatli yonetilmelidir.
 
 ## Calistirma
 
@@ -80,11 +136,13 @@ flutter test
 flutter build apk --debug
 ```
 
-## Sonraki Adimlar
+## Yol Haritasi
 
+- Firebase Console ayarlarinin tamamlanmasi
+- Gercek cihaz/emulator uzerinde kayit, giris, ilan ekleme, duzenleme ve silme testi
 - Fotograf yukleme
-- Harita ve konum destegi
 - Favorilere ekleme
 - Ilan durumu: aktif, satildi, pasif
-- Daha guvenli Firestore kurallari
 - Profil ekrani
+- Harita ve konum destegi
+- Daha guvenli production Firestore kurallari

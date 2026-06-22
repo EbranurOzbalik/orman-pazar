@@ -10,7 +10,7 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 | --- | --- |
 | Platform | Flutter mobil uygulama |
 | Backend | Firebase / Cloud Firestore |
-| Auth | Firebase Authentication hazirligi |
+| Auth | Firebase Authentication |
 | Ana akis | Ilan ekleme, listeleme, detay, duzenleme, silme |
 | Tasarim | Orman temasina uygun modern pazar arayuzu |
 | Durum | MVP gelistirme asamasi |
@@ -21,7 +21,7 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 - Ilan detayi goruntuleme
 - Kategoriye gore filtreleme
 - Baslik, aciklama, sehir, ilce ve agac turune gore arama
-- Email/sifre ile kayit ve giris altyapisi
+- Email/sifre ile kayit ve giris
 - Giris yapan kullanicinin ilan eklemesi
 - Kullanicinin kendi ilanlarini ayri ekranda gorebilmesi
 - Sadece ilan sahibinin ilan duzenleyip silebilmesi
@@ -108,25 +108,16 @@ lib/
 - Cloud Firestore
 - Firebase Authentication
 
-## Firebase Durumu
-
-Firebase kod tarafi projede hazirdir; Firebase Console ayarlari ayri olarak tamamlanmalidir.
-
-Gerekli Firebase Console adimlari:
-
-- Cloud Firestore aktif edilmeli.
-- Authentication icinde Email/Password giris yontemi aktif edilmeli.
-- Firestore Rules sekmesine `firestore.rules` dosyasindaki taslak kurallar uygulanmali.
-- Android icin `android/app/google-services.json` yerelde bulunmali.
-
-Not: `google-services.json` GitHub'a eklenmemelidir. Firebase config dosyalari API key icerdigi icin dikkatli yonetilmelidir.
-
 ## Calistirma
+
+Projeyi calistirmadan once Flutter kurulumu tamamlanmis olmali.
 
 ```bash
 flutter pub get
 flutter run
 ```
+
+Firebase ile calistirmak icin kendi Firebase projenizi Android uygulamasi olarak ekleyip `google-services.json` dosyasini `android/app/` klasorune yerlestirin. Bu dosya repoya dahil edilmez.
 
 Kontrol komutlari:
 
@@ -138,7 +129,6 @@ flutter build apk --debug
 
 ## Yol Haritasi
 
-- Firebase Console ayarlarinin tamamlanmasi
 - Gercek cihaz/emulator uzerinde kayit, giris, ilan ekleme, duzenleme ve silme testi
 - Fotograf yukleme
 - Favorilere ekleme

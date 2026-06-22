@@ -151,6 +151,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   _SearchAndFilters(
                     controller: _searchController,
                     selectedCategory: _selectedCategory,
+                    listingCount: allListings.length,
+                    visibleCount: filteredListings.length,
                     onSearchChanged: (value) {
                       setState(() => _searchText = value);
                     },
@@ -191,12 +193,16 @@ class _SearchAndFilters extends StatelessWidget {
   const _SearchAndFilters({
     required this.controller,
     required this.selectedCategory,
+    required this.listingCount,
+    required this.visibleCount,
     required this.onSearchChanged,
     required this.onCategorySelected,
   });
 
   final TextEditingController controller;
   final String selectedCategory;
+  final int listingCount;
+  final int visibleCount;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
 
@@ -205,38 +211,103 @@ class _SearchAndFilters extends StatelessWidget {
     final categories = [AppConstants.allCategories, ...AppConstants.categories];
 
     return Container(
-      color: AppConstants.deepGreen,
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
+      decoration: const BoxDecoration(
+        color: AppConstants.deepGreen,
+        border: Border(
+          bottom: BorderSide(color: AppConstants.woodBrown, width: 3),
+        ),
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Orman urunleri pazari',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.w900,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppConstants.amber,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.forest_outlined,
+                  color: AppConstants.deepGreen,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Orman urunleri pazari',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Odun, tomruk, kereste ve talas ilanlarini kesfet.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: Colors.white.withValues(alpha: 0.78),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Odun, tomruk, kereste ve talas ilanlarini kesfet.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.white.withValues(alpha: 0.78),
-              fontWeight: FontWeight.w500,
-            ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              Expanded(
+                child: _HeroStat(
+                  label: 'Toplam ilan',
+                  value: listingCount.toString(),
+                  icon: Icons.inventory_2_outlined,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HeroStat(
+                  label: 'Gorunen',
+                  value: visibleCount.toString(),
+                  icon: Icons.search_outlined,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 14),
           TextField(
             controller: controller,
-            decoration: const InputDecoration(
+            style: const TextStyle(
+              color: AppConstants.deepGreen,
+              fontWeight: FontWeight.w700,
+            ),
+            decoration: InputDecoration(
               hintText: 'Baslik, sehir veya agac turu ara',
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: controller.text.isEmpty
+                  ? null
+                  : IconButton(
+                      tooltip: 'Aramayi temizle',
+                      onPressed: () {
+                        controller.clear();
+                        onSearchChanged('');
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
             ),
             onChanged: onSearchChanged,
           ),
           const SizedBox(height: 12),
           SizedBox(
-            height: 40,
+            height: 42,
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               itemCount: categories.length,
@@ -246,6 +317,13 @@ class _SearchAndFilters extends StatelessWidget {
                 final isSelected = category == selectedCategory;
 
                 return ChoiceChip(
+                  avatar: Icon(
+                    _categoryIcon(category),
+                    size: 17,
+                    color: isSelected
+                        ? AppConstants.deepGreen
+                        : AppConstants.forestGreen,
+                  ),
                   label: Text(category),
                   selected: isSelected,
                   onSelected: (_) => onCategorySelected(category),
@@ -262,6 +340,76 @@ class _SearchAndFilters extends StatelessWidget {
                   ),
                 );
               },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _categoryIcon(String category) {
+    switch (category) {
+      case AppConstants.allCategories:
+        return Icons.grid_view_outlined;
+      case 'Yakacak Odun':
+        return Icons.local_fire_department_outlined;
+      case 'Kereste':
+        return Icons.carpenter_outlined;
+      case 'Tomruk':
+        return Icons.forest_outlined;
+      case 'Talas':
+        return Icons.grass_outlined;
+      default:
+        return Icons.eco_outlined;
+    }
+  }
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Icon(icon, color: AppConstants.amber, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.72),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -300,7 +448,7 @@ class _ListingsContent extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 96),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 104),
       itemCount: listings.length,
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) {

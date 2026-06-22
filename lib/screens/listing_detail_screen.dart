@@ -122,6 +122,7 @@ class ListingDetailScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppConstants.deepGreen,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppConstants.woodBrown, width: 2),
             ),
             padding: const EdgeInsets.all(18),
             child: Column(
@@ -174,7 +175,7 @@ class ListingDetailScreen extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   listing.title,
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -182,7 +183,7 @@ class ListingDetailScreen extends StatelessWidget {
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 14),
                 Row(
                   children: [
                     const Icon(
@@ -202,22 +203,34 @@ class ListingDetailScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _HeroMetric(
+                        label: 'Fiyat',
+                        value: '${_formatNumber(listing.price)} TL',
+                        icon: Icons.payments_outlined,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _HeroMetric(
+                        label: 'Miktar',
+                        value:
+                            '${_formatNumber(listing.amount)} ${listing.unit}',
+                        icon: Icons.inventory_2_outlined,
+                      ),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
           const SizedBox(height: 12),
           _InfoPanel(
+            title: 'Ilan bilgileri',
             children: [
-              _DetailRow(
-                icon: Icons.payments_outlined,
-                label: 'Fiyat',
-                value: '${_formatNumber(listing.price)} TL',
-              ),
-              _DetailRow(
-                icon: Icons.inventory_2_outlined,
-                label: 'Miktar',
-                value: '${_formatNumber(listing.amount)} ${listing.unit}',
-              ),
               _DetailRow(
                 icon: Icons.park_outlined,
                 label: 'Agac turu',
@@ -243,18 +256,8 @@ class ListingDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _InfoPanel(
+            title: 'Aciklama',
             children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  'Aciklama',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppConstants.deepGreen,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
               Text(
                 listing.description,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -278,9 +281,10 @@ class ListingDetailScreen extends StatelessWidget {
 }
 
 class _InfoPanel extends StatelessWidget {
-  const _InfoPanel({required this.children});
+  const _InfoPanel({required this.children, this.title});
 
   final List<Widget> children;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -291,7 +295,76 @@ class _InfoPanel extends StatelessWidget {
         border: Border.all(color: AppConstants.border),
       ),
       padding: const EdgeInsets.all(16),
-      child: Column(children: children),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (title != null) ...[
+            Text(
+              title!,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: AppConstants.deepGreen,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+          ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _HeroMetric extends StatelessWidget {
+  const _HeroMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
+      ),
+      padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Icon(icon, color: AppConstants.amber, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.72),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -32,6 +32,8 @@ class AppConstants {
   static const Color deepGreen = Color(0xFF163323);
   static const Color leafGreen = Color(0xFF5D8B4E);
   static const Color mossGreen = Color(0xFFDDE8D4);
+  static const Color sage = Color(0xFF8EA86F);
+  static const Color clay = Color(0xFFC46F3A);
   static const Color cream = Color(0xFFF7F2E8);
   static const Color cardBackground = Color(0xFFFFFCF6);
   static const Color woodBrown = Color(0xFF7A5634);

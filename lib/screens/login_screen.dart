@@ -87,63 +87,151 @@ class _LoginScreenState extends State<LoginScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(
-                AppConstants.appName,
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppConstants.forestGreen,
-                  fontWeight: FontWeight.w800,
-                ),
+              _AuthHeader(
+                title: AppConstants.appName,
+                message:
+                    'Ilan eklemek ve kendi ilanlarini yonetmek icin giris yap.',
+                icon: Icons.login,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Ilan eklemek icin hesabina giris yap.',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: AppConstants.mutedText),
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: 'E-posta'),
-                validator: _emailValidator,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Sifre'),
-                validator: _requiredValidator,
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _isLoading ? null : _signIn,
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.login),
-                label: Text(_isLoading ? 'Giris yapiliyor' : 'Giris yap'),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const RegisterScreen(),
-                          ),
-                        );
-                      },
-                child: const Text('Yeni hesap olustur'),
+              const SizedBox(height: 14),
+              _AuthPanel(
+                children: [
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'E-posta',
+                      prefixIcon: Icon(Icons.mail_outline),
+                    ),
+                    validator: _emailValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Sifre',
+                      prefixIcon: Icon(Icons.lock_outline),
+                    ),
+                    validator: _requiredValidator,
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: _isLoading ? null : _signIn,
+                    icon: _isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.login),
+                    label: Text(_isLoading ? 'Giris yapiliyor' : 'Giris yap'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const RegisterScreen(),
+                              ),
+                            );
+                          },
+                    child: const Text('Yeni hesap olustur'),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AuthHeader extends StatelessWidget {
+  const _AuthHeader({
+    required this.title,
+    required this.message,
+    required this.icon,
+  });
+
+  final String title;
+  final String message;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppConstants.deepGreen,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.woodBrown, width: 2),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppConstants.amber,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: AppConstants.deepGreen),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.74),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthPanel extends StatelessWidget {
+  const _AuthPanel({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppConstants.cardBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppConstants.deepGreen.withValues(alpha: 0.07),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(children: children),
     );
   }
 }

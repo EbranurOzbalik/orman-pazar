@@ -102,57 +102,150 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(
-                'Orman Pazar hesabi',
-                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppConstants.forestGreen,
-                  fontWeight: FontWeight.w800,
-                ),
+              _AuthHeader(
+                title: 'Orman Pazar hesabi',
+                message:
+                    'Kendi ilanlarini eklemek icin ucretsiz hesap olustur.',
+                icon: Icons.person_add_alt_1,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Kendi ilanlarini eklemek icin ucretsiz hesap olustur.',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: AppConstants.mutedText),
-              ),
-              const SizedBox(height: 24),
-              TextFormField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(labelText: 'E-posta'),
-                validator: _emailValidator,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Sifre'),
-                validator: _passwordValidator,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: _passwordAgainController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Sifre tekrar'),
-                validator: _passwordAgainValidator,
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: _isLoading ? null : _register,
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.person_add_alt_1),
-                label: Text(_isLoading ? 'Kayit olusturuluyor' : 'Kayit ol'),
+              const SizedBox(height: 14),
+              _AuthPanel(
+                children: [
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'E-posta',
+                      prefixIcon: Icon(Icons.mail_outline),
+                    ),
+                    validator: _emailValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Sifre',
+                      prefixIcon: Icon(Icons.lock_outline),
+                    ),
+                    validator: _passwordValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _passwordAgainController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Sifre tekrar',
+                      prefixIcon: Icon(Icons.verified_user_outlined),
+                    ),
+                    validator: _passwordAgainValidator,
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: _isLoading ? null : _register,
+                    icon: _isLoading
+                        ? const SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.person_add_alt_1),
+                    label: Text(
+                      _isLoading ? 'Kayit olusturuluyor' : 'Kayit ol',
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AuthHeader extends StatelessWidget {
+  const _AuthHeader({
+    required this.title,
+    required this.message,
+    required this.icon,
+  });
+
+  final String title;
+  final String message;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppConstants.deepGreen,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.woodBrown, width: 2),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: AppConstants.amber,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: AppConstants.deepGreen),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.74),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AuthPanel extends StatelessWidget {
+  const _AuthPanel({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppConstants.cardBackground,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.border),
+        boxShadow: [
+          BoxShadow(
+            color: AppConstants.deepGreen.withValues(alpha: 0.07),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(children: children),
     );
   }
 }

@@ -12,6 +12,7 @@ import 'add_listing_screen.dart';
 import 'listing_detail_screen.dart';
 import 'login_screen.dart';
 import 'my_listings_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -144,6 +145,15 @@ class _HomeScreenState extends State<HomeScreen> {
               else
                 Row(
                   children: [
+                    IconButton(
+                      tooltip: 'Profilim',
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => ProfileScreen()),
+                        );
+                      },
+                      icon: const Icon(Icons.account_circle_outlined),
+                    ),
                     IconButton(
                       tooltip: 'Benim ilanlarım',
                       onPressed: () {

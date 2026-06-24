@@ -14,7 +14,9 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _passwordAgainController = TextEditingController();
   final AuthService _authService = AuthService();
@@ -24,7 +26,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
+    _nameController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     _passwordController.dispose();
     _passwordAgainController.dispose();
     super.dispose();
@@ -51,7 +55,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await _userService.saveUser(
         AppUserModel(
           id: user.uid,
+          name: _nameController.text.trim(),
           email: user.email ?? _emailController.text.trim(),
+          phone: _phoneController.text.trim(),
           createdAt: DateTime.now(),
         ),
       );
@@ -87,12 +93,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return null;
   }
 
+  String? _nameValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Bu alan zorunlu';
+    }
+    if (value.trim().length < 3) {
+      return 'Ad soyad en az 3 karakter olmali';
+    }
+    return null;
+  }
+
   String? _passwordValidator(String? value) {
     if (value == null || value.isEmpty) {
       return 'Bu alan zorunlu';
     }
     if (value.length < 6) {
       return 'Şifre en az 6 karakter olmalı';
+    }
+    return null;
+  }
+
+  String? _phoneValidator(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Bu alan zorunlu';
+    }
+    final digits = value.replaceAll(RegExp(r'\D'), '');
+    if (digits.length < 10) {
+      return 'Telefon en az 10 rakam olmali';
     }
     return null;
   }
@@ -128,6 +155,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
               _AuthPanel(
                 children: [
                   TextFormField(
+                    controller: _nameController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Ad soyad',
+                      prefixIcon: Icon(Icons.person_outline),
+                    ),
+                    validator: _nameValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
@@ -135,6 +172,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       prefixIcon: Icon(Icons.mail_outline),
                     ),
                     validator: _emailValidator,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Telefon',
+                      prefixIcon: Icon(Icons.phone_outlined),
+                    ),
+                    validator: _phoneValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(

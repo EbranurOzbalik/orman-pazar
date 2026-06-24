@@ -19,6 +19,12 @@ class UserService {
     await _usersCollection.doc(user.id).set(user.toMap());
   }
 
+  Future<void> updateUser(AppUserModel user) async {
+    await _usersCollection
+        .doc(user.id)
+        .set(user.toMap(), SetOptions(merge: true));
+  }
+
   // İleride profil ekranı için tek kullanıcı dokümanını okumamız gerekebilir.
   Future<AppUserModel?> getUserById(String id) async {
     final doc = await _usersCollection.doc(id).get();
@@ -28,5 +34,16 @@ class UserService {
     }
 
     return AppUserModel.fromMap(doc.id, doc.data()!);
+  }
+
+  Stream<AppUserModel?> watchUserById(String id) {
+    return _usersCollection.doc(id).snapshots().map((doc) {
+      final data = doc.data();
+      if (!doc.exists || data == null) {
+        return null;
+      }
+
+      return AppUserModel.fromMap(doc.id, data);
+    });
   }
 }

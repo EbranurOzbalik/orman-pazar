@@ -16,6 +16,7 @@ class ListingModel {
     required this.hasDelivery,
     required this.phone,
     required this.sellerId,
+    required this.sellerName,
     required this.createdAt,
   });
 
@@ -33,6 +34,7 @@ class ListingModel {
   final bool hasDelivery;
   final String phone;
   final String sellerId;
+  final String sellerName;
   final DateTime createdAt;
 
   // Firestore'a yazılacak sade Map yapısı. id alanını belge id'si olarak
@@ -52,6 +54,7 @@ class ListingModel {
     bool? hasDelivery,
     String? phone,
     String? sellerId,
+    String? sellerName,
     DateTime? createdAt,
   }) {
     return ListingModel(
@@ -69,6 +72,7 @@ class ListingModel {
       hasDelivery: hasDelivery ?? this.hasDelivery,
       phone: phone ?? this.phone,
       sellerId: sellerId ?? this.sellerId,
+      sellerName: sellerName ?? this.sellerName,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -88,6 +92,7 @@ class ListingModel {
       'hasDelivery': hasDelivery,
       'phone': phone,
       'sellerId': sellerId,
+      'sellerName': sellerName,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -110,6 +115,7 @@ class ListingModel {
       hasDelivery: map['hasDelivery'] as bool? ?? false,
       phone: map['phone'] as String? ?? '',
       sellerId: map['sellerId'] as String? ?? '',
+      sellerName: map['sellerName'] as String? ?? '',
       createdAt: _toDateTime(map['createdAt']),
     );
   }

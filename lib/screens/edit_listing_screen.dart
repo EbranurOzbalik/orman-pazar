@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
+import '../models/app_user_model.dart';
 import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
+import '../services/user_service.dart';
 
 class EditListingScreen extends StatefulWidget {
   const EditListingScreen({super.key, required this.listing});
@@ -26,6 +28,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   final ListingService _listingService = ListingService();
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   late String _category;
   late String _woodType;
@@ -87,6 +90,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     }
 
     setState(() => _isSaving = true);
+    final profile = await _userService.getUserById(user.uid);
 
     final updatedListing = widget.listing.copyWith(
       title: _titleController.text.trim(),
@@ -101,6 +105,11 @@ class _EditListingScreenState extends State<EditListingScreen> {
       moistureStatus: _moistureStatus,
       hasDelivery: _hasDelivery,
       phone: _phoneController.text.trim(),
+      sellerName: _resolveSellerName(
+        userEmail: user.email,
+        profile: profile,
+        existingSellerName: widget.listing.sellerName,
+      ),
     );
 
     try {
@@ -131,6 +140,26 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
   double _parseNumber(String value) {
     return double.tryParse(value.trim().replaceAll(',', '.')) ?? 0;
+  }
+
+  String _resolveSellerName({
+    required String? userEmail,
+    required AppUserModel? profile,
+    required String existingSellerName,
+  }) {
+    if (profile != null && profile.displayName.trim().isNotEmpty) {
+      return profile.displayName.trim();
+    }
+    if (existingSellerName.trim().isNotEmpty) {
+      return existingSellerName.trim();
+    }
+
+    final emailPrefix = (userEmail ?? '').split('@').first.trim();
+    if (emailPrefix.isNotEmpty) {
+      return emailPrefix;
+    }
+
+    return 'Kullanici';
   }
 
   String _formatNumber(double value) {

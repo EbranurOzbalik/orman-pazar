@@ -90,6 +90,14 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 - Ana ekran üst paneli daha kompakt hale getirildi.
 - Uygulamadan kayıt olma ve ilan ekleme akışı test kapsamına alındı.
 
+### Gün 8 - Profil ve Satıcı Bilgisi
+
+- Kayıt formuna `ad soyad` alanı eklendi.
+- Kullanıcı profili `name + email + createdAt` ile Firestore'da tutulacak şekilde genişletildi.
+- Profil ekranı eklendi.
+- Benim ilanlarım ekranına kullanıcı özeti bağlandı.
+- İlan detayında satıcı adı ve satıcı e-posta bilgisi gösterilmeye başlandı.
+
 ## Teknik Yapi
 
 ```text
@@ -106,6 +114,7 @@ lib/
     listing_detail_screen.dart
     login_screen.dart
     my_listings_screen.dart
+    profile_screen.dart
     register_screen.dart
   services/
     auth_service.dart

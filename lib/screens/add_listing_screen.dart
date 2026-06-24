@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
+import '../models/app_user_model.dart';
 import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
+import '../services/user_service.dart';
 
 class AddListingScreen extends StatefulWidget {
   const AddListingScreen({super.key});
@@ -24,6 +26,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
   final ListingService _listingService = ListingService();
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   String _category = AppConstants.categories.first;
   String _woodType = AppConstants.woodTypes.first;
@@ -31,6 +34,13 @@ class _AddListingScreenState extends State<AddListingScreen> {
   String _moistureStatus = AppConstants.moistureStatuses.first;
   bool _hasDelivery = false;
   bool _isSaving = false;
+  bool _isPrefillingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _prefillFromProfile();
+  }
 
   @override
   void dispose() {
@@ -42,6 +52,30 @@ class _AddListingScreenState extends State<AddListingScreen> {
     _districtController.dispose();
     _phoneController.dispose();
     super.dispose();
+  }
+
+  Future<void> _prefillFromProfile() async {
+    final user = _authService.currentUser;
+    if (user == null) {
+      if (mounted) {
+        setState(() => _isPrefillingProfile = false);
+      }
+      return;
+    }
+
+    final profile = await _userService.getUserById(user.uid);
+
+    if (!mounted) {
+      return;
+    }
+
+    if (profile != null &&
+        _phoneController.text.trim().isEmpty &&
+        profile.phone.trim().isNotEmpty) {
+      _phoneController.text = profile.phone.trim();
+    }
+
+    setState(() => _isPrefillingProfile = false);
   }
 
   Future<void> _saveListing() async {
@@ -60,6 +94,12 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
     setState(() => _isSaving = true);
 
+    final profile = await _userService.getUserById(user.uid);
+    final sellerName = _resolveSellerName(
+      userEmail: user.email,
+      profile: profile,
+    );
+
     final listing = ListingModel(
       id: '',
       title: _titleController.text.trim(),
@@ -75,6 +115,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
       hasDelivery: _hasDelivery,
       phone: _phoneController.text.trim(),
       sellerId: user.uid,
+      sellerName: sellerName,
       createdAt: DateTime.now(),
     );
 
@@ -106,6 +147,22 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
   double _parseNumber(String value) {
     return double.tryParse(value.trim().replaceAll(',', '.')) ?? 0;
+  }
+
+  String _resolveSellerName({
+    required String? userEmail,
+    required AppUserModel? profile,
+  }) {
+    if (profile != null && profile.displayName.trim().isNotEmpty) {
+      return profile.displayName.trim();
+    }
+
+    final emailPrefix = (userEmail ?? '').split('@').first.trim();
+    if (emailPrefix.isNotEmpty) {
+      return emailPrefix;
+    }
+
+    return 'Kullanici';
   }
 
   String? _requiredValidator(String? value) {
@@ -195,6 +252,11 @@ class _AddListingScreenState extends State<AddListingScreen> {
               _FormPanel(
                 title: 'Ürün bilgileri',
                 children: [
+                  if (_isPrefillingProfile)
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12),
+                      child: LinearProgressIndicator(minHeight: 3),
+                    ),
                   TextFormField(
                     controller: _titleController,
                     decoration: const InputDecoration(labelText: 'Başlık'),

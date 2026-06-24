@@ -6,7 +6,6 @@ class AppConstants {
   static const String appName = 'Orman Pazar';
   static const String listingsCollection = 'listings';
   static const String usersCollection = 'users';
-  static const String temporarySellerId = 'test-user';
   static const String allCategories = 'Tümü';
 
   static const List<String> categories = [

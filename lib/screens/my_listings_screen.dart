@@ -20,11 +20,11 @@ class MyListingsScreen extends StatelessWidget {
 
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Benim ilanlarim')),
+        appBar: AppBar(title: const Text('Benim ilanlarım')),
         body: _StateMessage(
           icon: Icons.lock_outline,
-          title: 'Giris yapman gerekiyor',
-          message: 'Kendi ilanlarini gormek icin once hesabina gir.',
+          title: 'Giriş yapman gerekiyor',
+          message: 'Kendi ilanlarını görmek için önce hesabına gir.',
           action: FilledButton.icon(
             onPressed: () {
               Navigator.of(
@@ -32,14 +32,14 @@ class MyListingsScreen extends StatelessWidget {
               ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
             },
             icon: const Icon(Icons.login),
-            label: const Text('Giris yap'),
+            label: const Text('Giriş yap'),
           ),
         ),
       );
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Benim ilanlarim')),
+      appBar: AppBar(title: const Text('Benim ilanlarım')),
       body: StreamBuilder<List<ListingModel>>(
         stream: _listingService.getListingsBySeller(user.uid),
         builder: (context, snapshot) {
@@ -50,7 +50,7 @@ class MyListingsScreen extends StatelessWidget {
           if (snapshot.hasError) {
             return _StateMessage(
               icon: Icons.error_outline,
-              title: 'Ilanlar yuklenemedi',
+              title: 'İlanlar yüklenemedi',
               message: snapshot.error.toString(),
             );
           }
@@ -59,8 +59,8 @@ class MyListingsScreen extends StatelessWidget {
           if (listings.isEmpty) {
             return const _StateMessage(
               icon: Icons.add_business_outlined,
-              title: 'Henuz ilanin yok',
-              message: 'Ekledigin ilanlar burada duzenli sekilde listelenecek.',
+              title: 'Henüz ilanın yok',
+              message: 'Eklediğin ilanlar burada düzenli şekilde listelenecek.',
             );
           }
 
@@ -103,7 +103,7 @@ class MyListingsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            'Duzenleme ve silme islemlerini ilan detayindan yapabilirsin.',
+                            'Düzenleme ve silme işlemlerini ilan detayından yapabilirsin.',
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.76),

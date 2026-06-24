@@ -1,6 +1,8 @@
 # Orman Pazar
 
-Orman Pazar, ormancilik urunleri icin gelistirilen Flutter tabanli bir mobil ilan uygulamasidir. Odun, kereste, tomruk, talas gibi urunleri satan kisiler ilan ekleyebilir; alicilar ilanlari listeleyip detaylarini inceleyebilir.
+description: "Orman ürünleri için Flutter ve Firebase tabanlı mobil ilan uygulaması."
+
+Orman Pazar, ormancılık ürünleri için geliştirilen Flutter tabanlı bir mobil ilan uygulamasıdır. Odun, kereste, tomruk, talaş gibi ürünleri satan kişiler ilan ekleyebilir; alıcılar ilanları listeleyip detaylarını inceleyebilir.
 
 Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir Flutter projesi olarak hazirlanmistir.
 
@@ -76,6 +78,18 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 - Detay ekraninda fiyat ve miktar daha belirgin hale getirildi.
 - Giris ve kayit ekranlari marka paneli + form karti yapisina tasindi.
 
+### Gün 7 - Firebase Entegrasyon Testleri
+
+- Firestore kuralları canlı Firebase projesinde uygulandı.
+- Email/Password Authentication aktif edildi.
+- Test kullanıcı oluşturuldu.
+- Kayıt olan kullanıcıların `users/{uid}` dokümanında tutulması eklendi.
+- Firestore'a manuel test ilanları eklendi.
+- Uygulamada Auth + Firestore ile ilan listeleme test edildi.
+- Arama alanı şehir/ilçe dahil tek kutuda çalışacak şekilde sadeleştirildi.
+- Ana ekran üst paneli daha kompakt hale getirildi.
+- Uygulamadan kayıt olma ve ilan ekleme akışı test kapsamına alındı.
+
 ## Teknik Yapi
 
 ```text
@@ -83,6 +97,7 @@ lib/
   constants/
     app_constants.dart
   models/
+    app_user_model.dart
     listing_model.dart
   screens/
     add_listing_screen.dart
@@ -95,6 +110,7 @@ lib/
   services/
     auth_service.dart
     listing_service.dart
+    user_service.dart
   widgets/
     listing_card.dart
   main.dart
@@ -118,6 +134,15 @@ flutter run
 ```
 
 Firebase ile calistirmak icin kendi Firebase projenizi Android uygulamasi olarak ekleyip `google-services.json` dosyasini `android/app/` klasorune yerlestirin. Bu dosya repoya dahil edilmez.
+
+Kayıt olan kullanıcıları Firestore'da tutmak için rules içinde `users` koleksiyonuna şu izin de eklenmelidir:
+
+```js
+match /users/{userId} {
+  allow read: if request.auth != null && request.auth.uid == userId;
+  allow create, update: if request.auth != null && request.auth.uid == userId;
+}
+```
 
 Kontrol komutlari:
 

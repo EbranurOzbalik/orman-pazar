@@ -32,8 +32,8 @@ class ListingService {
         });
   }
 
-  // Giris yapan kullanicinin kendi ilanlarini canli dinler.
-  // Siralamayi uygulama icinde yapiyoruz; bu sekilde ek Firestore index gerekmez.
+  // Giriş yapan kullanıcının kendi ilanlarını canlı dinler.
+  // Sıralamayı uygulama içinde yapıyoruz; bu şekilde ek Firestore index gerekmez.
   Stream<List<ListingModel>> getListingsBySeller(String sellerId) {
     return _listingsCollection
         .where('sellerId', isEqualTo: sellerId)
@@ -60,7 +60,7 @@ class ListingService {
 
   Future<void> updateListing(ListingModel listing) async {
     if (listing.id.isEmpty) {
-      throw ArgumentError('Guncellenecek ilanin id bilgisi yok.');
+      throw ArgumentError('Güncellenecek ilanın id bilgisi yok.');
     }
 
     await _listingsCollection.doc(listing.id).update(listing.toMap());

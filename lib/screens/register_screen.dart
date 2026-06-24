@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
+import '../models/app_user_model.dart';
 import '../services/auth_service.dart';
+import '../services/user_service.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -16,6 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _passwordAgainController = TextEditingController();
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   bool _isLoading = false;
 
@@ -35,9 +38,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.register(
+      final credential = await _authService.register(
         email: _emailController.text,
         password: _passwordController.text,
+      );
+      final user = credential.user;
+
+      if (user == null) {
+        throw Exception('Kullanıcı bilgisi alınamadı');
+      }
+
+      await _userService.saveUser(
+        AppUserModel(
+          id: user.uid,
+          email: user.email ?? _emailController.text.trim(),
+          createdAt: DateTime.now(),
+        ),
       );
 
       if (!mounted) {
@@ -53,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Kayit olusturulamadi: $error')));
+      ).showSnackBar(SnackBar(content: Text('Kayıt oluşturulamadı: $error')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -66,7 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return 'Bu alan zorunlu';
     }
     if (!value.contains('@')) {
-      return 'Gecerli bir e-posta gir';
+      return 'Geçerli bir e-posta gir';
     }
     return null;
   }
@@ -76,7 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return 'Bu alan zorunlu';
     }
     if (value.length < 6) {
-      return 'Sifre en az 6 karakter olmali';
+      return 'Şifre en az 6 karakter olmalı';
     }
     return null;
   }
@@ -87,7 +103,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return passwordError;
     }
     if (value != _passwordController.text) {
-      return 'Sifreler ayni degil';
+      return 'Şifreler aynı değil';
     }
     return null;
   }
@@ -95,7 +111,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Hesap olustur')),
+      appBar: AppBar(title: const Text('Hesap oluştur')),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -105,7 +121,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               _AuthHeader(
                 title: 'Orman Pazar hesabi',
                 message:
-                    'Kendi ilanlarini eklemek icin ucretsiz hesap olustur.',
+                    'Kendi ilanlarını eklemek için ücretsiz hesap oluştur.',
                 icon: Icons.person_add_alt_1,
               ),
               const SizedBox(height: 14),
@@ -125,7 +141,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
-                      labelText: 'Sifre',
+                      labelText: 'Şifre',
                       prefixIcon: Icon(Icons.lock_outline),
                     ),
                     validator: _passwordValidator,
@@ -135,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     controller: _passwordAgainController,
                     obscureText: true,
                     decoration: const InputDecoration(
-                      labelText: 'Sifre tekrar',
+                      labelText: 'Şifre tekrar',
                       prefixIcon: Icon(Icons.verified_user_outlined),
                     ),
                     validator: _passwordAgainValidator,
@@ -151,7 +167,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           )
                         : const Icon(Icons.person_add_alt_1),
                     label: Text(
-                      _isLoading ? 'Kayit olusturuluyor' : 'Kayit ol',
+                      _isLoading ? 'Kayıt oluşturuluyor' : 'Kayıt ol',
                     ),
                   ),
                 ],

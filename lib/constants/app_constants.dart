@@ -5,29 +5,29 @@ class AppConstants {
 
   static const String appName = 'Orman Pazar';
   static const String listingsCollection = 'listings';
+  static const String usersCollection = 'users';
   static const String temporarySellerId = 'test-user';
-  static const String allCategories = 'Tumu';
-  static const String allCities = 'Tum sehirler';
+  static const String allCategories = 'Tümü';
 
   static const List<String> categories = [
     'Yakacak Odun',
     'Kereste',
     'Tomruk',
-    'Talas',
-    'Diger',
+    'Talaş',
+    'Diğer',
   ];
 
   static const List<String> woodTypes = [
-    'Mese',
-    'Cam',
-    'Gurgen',
-    'Kayin',
-    'Diger',
+    'Meşe',
+    'Çam',
+    'Gürgen',
+    'Kayın',
+    'Diğer',
   ];
 
-  static const List<String> units = ['kg', 'ton', 'ster', 'm3', 'cuval'];
+  static const List<String> units = ['kg', 'ton', 'ster', 'm³', 'çuval'];
 
-  static const List<String> moistureStatuses = ['Kuru', 'Yas', 'Karisik'];
+  static const List<String> moistureStatuses = ['Kuru', 'Yaş', 'Karışık'];
 
   static const Color forestGreen = Color(0xFF244E34);
   static const Color deepGreen = Color(0xFF163323);

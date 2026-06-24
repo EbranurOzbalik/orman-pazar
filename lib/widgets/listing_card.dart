@@ -186,7 +186,7 @@ class ListingCard extends StatelessWidget {
         return Icons.carpenter_outlined;
       case 'Tomruk':
         return Icons.forest_outlined;
-      case 'Talas':
+      case 'Talaş':
         return Icons.grass_outlined;
       default:
         return Icons.eco_outlined;
@@ -201,7 +201,7 @@ class ListingCard extends StatelessWidget {
         return AppConstants.woodBrown;
       case 'Tomruk':
         return AppConstants.forestGreen;
-      case 'Talas':
+      case 'Talaş':
         return AppConstants.sage;
       default:
         return AppConstants.leafGreen;

@@ -51,7 +51,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Giris yapilamadi: $error')));
+      ).showSnackBar(SnackBar(content: Text('Giriş yapılamadı: $error')));
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -72,7 +72,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return requiredError;
     }
     if (!value!.contains('@')) {
-      return 'Gecerli bir e-posta gir';
+      return 'Geçerli bir e-posta gir';
     }
     return null;
   }
@@ -80,7 +80,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Giris yap')),
+      appBar: AppBar(title: const Text('Giriş yap')),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -90,7 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
               _AuthHeader(
                 title: AppConstants.appName,
                 message:
-                    'Ilan eklemek ve kendi ilanlarini yonetmek icin giris yap.',
+                    'İlan eklemek ve kendi ilanlarını yönetmek için giriş yap.',
                 icon: Icons.login,
               ),
               const SizedBox(height: 14),
@@ -110,7 +110,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     controller: _passwordController,
                     obscureText: true,
                     decoration: const InputDecoration(
-                      labelText: 'Sifre',
+                      labelText: 'Şifre',
                       prefixIcon: Icon(Icons.lock_outline),
                     ),
                     validator: _requiredValidator,
@@ -125,7 +125,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.login),
-                    label: Text(_isLoading ? 'Giris yapiliyor' : 'Giris yap'),
+                    label: Text(_isLoading ? 'Giriş yapılıyor' : 'Giriş yap'),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
@@ -138,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           },
-                    child: const Text('Yeni hesap olustur'),
+                    child: const Text('Yeni hesap oluştur'),
                   ),
                 ],
               ),

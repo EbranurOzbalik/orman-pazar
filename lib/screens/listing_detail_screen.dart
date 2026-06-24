@@ -28,12 +28,12 @@ class ListingDetailScreen extends StatelessWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('Ilani sil'),
-          content: const Text('Bu ilani silmek istedigine emin misin?'),
+          title: const Text('İlanı sil'),
+          content: const Text('Bu ilanı silmek istediğine emin misin?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('Vazgec'),
+              child: const Text('Vazgeç'),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(true),
@@ -58,7 +58,7 @@ class ListingDetailScreen extends StatelessWidget {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Ilan silindi')));
+      ).showSnackBar(const SnackBar(content: Text('İlan silindi')));
       Navigator.of(context).pop();
     } catch (error) {
       if (!context.mounted) {
@@ -67,7 +67,7 @@ class ListingDetailScreen extends StatelessWidget {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Ilan silinemedi: $error')));
+      ).showSnackBar(SnackBar(content: Text('İlan silinemedi: $error')));
     }
   }
 
@@ -78,7 +78,7 @@ class ListingDetailScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ilan detayi'),
+        title: const Text('İlan detayı'),
         actions: [
           if (isOwner)
             PopupMenuButton<String>(
@@ -97,7 +97,7 @@ class ListingDetailScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.edit_outlined),
                       SizedBox(width: 8),
-                      Text('Duzenle'),
+                      Text('Düzenle'),
                     ],
                   ),
                 ),
@@ -163,7 +163,7 @@ class ListingDetailScreen extends StatelessWidget {
                             ),
                             SizedBox(width: 5),
                             Text(
-                              'Senin ilanin',
+                              'Senin ilanın',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,
@@ -229,11 +229,11 @@ class ListingDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _InfoPanel(
-            title: 'Ilan bilgileri',
+            title: 'İlan bilgileri',
             children: [
               _DetailRow(
                 icon: Icons.park_outlined,
-                label: 'Agac turu',
+                label: 'Ağaç türü',
                 value: listing.woodType,
               ),
               _DetailRow(
@@ -256,7 +256,7 @@ class ListingDetailScreen extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           _InfoPanel(
-            title: 'Aciklama',
+            title: 'Açıklama',
             children: [
               Text(
                 listing.description,

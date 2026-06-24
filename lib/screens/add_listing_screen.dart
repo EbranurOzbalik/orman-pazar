@@ -53,7 +53,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ilan eklemek icin giris yapmalisin')),
+        const SnackBar(content: Text('İlan eklemek için giriş yapmalısın')),
       );
       return;
     }
@@ -87,7 +87,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Ilan kaydedildi')));
+      ).showSnackBar(const SnackBar(content: Text('İlan kaydedildi')));
       Navigator.of(context).pop();
     } catch (error) {
       if (!mounted) {
@@ -96,7 +96,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Ilan kaydedilemedi: $error')));
+      ).showSnackBar(SnackBar(content: Text('İlan kaydedilemedi: $error')));
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -121,7 +121,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
       return requiredError;
     }
     if (value!.trim().length < 3) {
-      return 'Baslik en az 3 karakter olmali';
+      return 'Başlık en az 3 karakter olmalı';
     }
     return null;
   }
@@ -132,7 +132,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
       return requiredError;
     }
     if (value!.trim().length < 10) {
-      return 'Aciklama en az 10 karakter olmali';
+      return 'Açıklama en az 10 karakter olmalı';
     }
     return null;
   }
@@ -143,7 +143,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
       return requiredError;
     }
     if (value!.trim().length < 2) {
-      return 'Sehir adini kontrol et';
+      return 'Şehir adını kontrol et';
     }
     return null;
   }
@@ -154,7 +154,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
       return requiredError;
     }
     if (value!.trim().length < 2) {
-      return 'Ilce adini kontrol et';
+      return 'İlçe adını kontrol et';
     }
     return null;
   }
@@ -166,7 +166,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
     }
     final digits = value!.replaceAll(RegExp(r'\D'), '');
     if (digits.length < 10) {
-      return 'Telefon en az 10 rakam olmali';
+      return 'Telefon en az 10 rakam olmalı';
     }
     return null;
   }
@@ -177,7 +177,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
     }
     final number = double.tryParse(value.trim().replaceAll(',', '.'));
     if (number == null || number <= 0) {
-      return 'Gecerli bir sayi gir';
+      return 'Geçerli bir sayı gir';
     }
     return null;
   }
@@ -185,7 +185,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ilan ekle')),
+      appBar: AppBar(title: const Text('İlan ekle')),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -193,17 +193,17 @@ class _AddListingScreenState extends State<AddListingScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               _FormPanel(
-                title: 'Urun bilgileri',
+                title: 'Ürün bilgileri',
                 children: [
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Baslik'),
+                    decoration: const InputDecoration(labelText: 'Başlık'),
                     validator: _titleValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(labelText: 'Aciklama'),
+                    decoration: const InputDecoration(labelText: 'Açıklama'),
                     minLines: 3,
                     maxLines: 5,
                     validator: _descriptionValidator,
@@ -217,7 +217,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                   ),
                   const SizedBox(height: 12),
                   _DropdownField(
-                    label: 'Agac turu',
+                    label: 'Ağaç türü',
                     value: _woodType,
                     items: AppConstants.woodTypes,
                     onChanged: (value) => setState(() => _woodType = value),
@@ -239,7 +239,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _DropdownField(
-                          label: 'Olcu birimi',
+                          label: 'Ölçü birimi',
                           value: _unit,
                           items: AppConstants.units,
                           onChanged: (value) => setState(() => _unit = value),
@@ -258,17 +258,17 @@ class _AddListingScreenState extends State<AddListingScreen> {
               ),
               const SizedBox(height: 14),
               _FormPanel(
-                title: 'Konum ve satis',
+                title: 'Konum ve satış',
                 children: [
                   TextFormField(
                     controller: _cityController,
-                    decoration: const InputDecoration(labelText: 'Sehir'),
+                    decoration: const InputDecoration(labelText: 'Şehir'),
                     validator: _cityValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _districtController,
-                    decoration: const InputDecoration(labelText: 'Ilce'),
+                    decoration: const InputDecoration(labelText: 'İlçe'),
                     validator: _districtValidator,
                   ),
                   const SizedBox(height: 12),
@@ -283,7 +283,7 @@ class _AddListingScreenState extends State<AddListingScreen> {
                   SwitchListTile(
                     value: _hasDelivery,
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Nakliye var mi?'),
+                    title: const Text('Nakliye var mı?'),
                     activeThumbColor: AppConstants.forestGreen,
                     onChanged: (value) => setState(() => _hasDelivery = value),
                   ),

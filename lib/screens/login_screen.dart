@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
 import '../services/auth_service.dart';
+import '../services/user_service.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +17,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
 
   bool _isLoading = false;
 
@@ -34,9 +36,19 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      await _authService.signIn(
+      final credential = await _authService.signIn(
         email: _emailController.text,
         password: _passwordController.text,
+      );
+      final user = credential.user;
+
+      if (user == null) {
+        throw Exception('Kullanici bilgisi alinamadi');
+      }
+
+      await _userService.ensureUserDocument(
+        id: user.uid,
+        email: user.email ?? _emailController.text.trim(),
       );
 
       if (!mounted) {

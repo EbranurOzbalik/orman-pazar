@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
-import '../models/app_user_model.dart';
 import '../services/auth_service.dart';
 import '../services/user_service.dart';
 
@@ -52,14 +51,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         throw Exception('Kullanıcı bilgisi alınamadı');
       }
 
-      await _userService.saveUser(
-        AppUserModel(
-          id: user.uid,
-          name: _nameController.text.trim(),
-          email: user.email ?? _emailController.text.trim(),
-          phone: _phoneController.text.trim(),
-          createdAt: DateTime.now(),
-        ),
+      await _userService.ensureUserDocument(
+        id: user.uid,
+        name: _nameController.text.trim(),
+        email: user.email ?? _emailController.text.trim(),
+        phone: _phoneController.text.trim(),
       );
 
       if (!mounted) {

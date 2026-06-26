@@ -6,27 +6,38 @@ class AppConstants {
   static const String appName = 'Orman Pazar';
   static const String listingsCollection = 'listings';
   static const String usersCollection = 'users';
-  static const String allCategories = 'Tümü';
+
+  static const String allCategories = 'Tumu';
+  static const String allStatuses = 'Tum durumlar';
+  static const String activeStatus = 'Aktif';
+  static const String reservedStatus = 'Rezerve';
+  static const String soldStatus = 'Satildi';
 
   static const List<String> categories = [
     'Yakacak Odun',
     'Kereste',
     'Tomruk',
-    'Talaş',
-    'Diğer',
+    'Talas',
+    'Diger',
   ];
 
   static const List<String> woodTypes = [
-    'Meşe',
-    'Çam',
-    'Gürgen',
-    'Kayın',
-    'Diğer',
+    'Mese',
+    'Cam',
+    'Gurgen',
+    'Kayin',
+    'Diger',
   ];
 
-  static const List<String> units = ['kg', 'ton', 'ster', 'm³', 'çuval'];
+  static const List<String> units = ['kg', 'ton', 'ster', 'm3', 'cuval'];
 
-  static const List<String> moistureStatuses = ['Kuru', 'Yaş', 'Karışık'];
+  static const List<String> moistureStatuses = ['Kuru', 'Yas', 'Karisik'];
+
+  static const List<String> listingStatuses = [
+    activeStatus,
+    reservedStatus,
+    soldStatus,
+  ];
 
   static const Color forestGreen = Color(0xFF244E34);
   static const Color deepGreen = Color(0xFF163323);
@@ -40,4 +51,28 @@ class AppConstants {
   static const Color amber = Color(0xFFE2A94B);
   static const Color mutedText = Color(0xFF6D6A61);
   static const Color border = Color(0xFFE7DDCD);
+
+  static IconData listingStatusIcon(String status) {
+    switch (status) {
+      case reservedStatus:
+        return Icons.schedule_outlined;
+      case soldStatus:
+        return Icons.check_circle_outline;
+      case activeStatus:
+      default:
+        return Icons.bolt_outlined;
+    }
+  }
+
+  static Color listingStatusColor(String status) {
+    switch (status) {
+      case reservedStatus:
+        return amber;
+      case soldStatus:
+        return clay;
+      case activeStatus:
+      default:
+        return leafGreen;
+    }
+  }
 }

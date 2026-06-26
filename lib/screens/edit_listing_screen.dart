@@ -34,6 +34,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
   late String _woodType;
   late String _unit;
   late String _moistureStatus;
+  late String _status;
   late bool _hasDelivery;
   bool _isSaving = false;
 
@@ -44,12 +45,8 @@ class _EditListingScreenState extends State<EditListingScreen> {
     final listing = widget.listing;
     _titleController = TextEditingController(text: listing.title);
     _descriptionController = TextEditingController(text: listing.description);
-    _amountController = TextEditingController(
-      text: _formatNumber(listing.amount),
-    );
-    _priceController = TextEditingController(
-      text: _formatNumber(listing.price),
-    );
+    _amountController = TextEditingController(text: _formatNumber(listing.amount));
+    _priceController = TextEditingController(text: _formatNumber(listing.price));
     _cityController = TextEditingController(text: listing.city);
     _districtController = TextEditingController(text: listing.district);
     _phoneController = TextEditingController(text: listing.phone);
@@ -61,6 +58,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       listing.moistureStatus,
       AppConstants.moistureStatuses,
     );
+    _status = _safeValue(listing.status, AppConstants.listingStatuses);
     _hasDelivery = listing.hasDelivery;
   }
 
@@ -84,7 +82,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     final user = _authService.currentUser;
     if (user == null || user.uid != widget.listing.sellerId) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Bu ilanı düzenleme yetkin yok')),
+        const SnackBar(content: Text('Bu ilani duzenleme yetkin yok')),
       );
       return;
     }
@@ -110,6 +108,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
         profile: profile,
         existingSellerName: widget.listing.sellerName,
       ),
+      status: _status,
     );
 
     try {
@@ -121,7 +120,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('İlan güncellendi')));
+      ).showSnackBar(const SnackBar(content: Text('Ilan guncellendi')));
       Navigator.of(context).pop(true);
     } catch (error) {
       if (!mounted) {
@@ -130,7 +129,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
 
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('İlan güncellenemedi: $error')));
+      ).showSnackBar(SnackBar(content: Text('Ilan guncellenemedi: $error')));
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -186,7 +185,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       return requiredError;
     }
     if (value!.trim().length < 3) {
-      return 'Başlık en az 3 karakter olmalı';
+      return 'Baslik en az 3 karakter olmali';
     }
     return null;
   }
@@ -197,7 +196,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       return requiredError;
     }
     if (value!.trim().length < 10) {
-      return 'Açıklama en az 10 karakter olmalı';
+      return 'Aciklama en az 10 karakter olmali';
     }
     return null;
   }
@@ -208,7 +207,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       return requiredError;
     }
     if (value!.trim().length < 2) {
-      return 'Şehir adını kontrol et';
+      return 'Sehir adini kontrol et';
     }
     return null;
   }
@@ -219,7 +218,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
       return requiredError;
     }
     if (value!.trim().length < 2) {
-      return 'İlçe adını kontrol et';
+      return 'Ilce adini kontrol et';
     }
     return null;
   }
@@ -231,7 +230,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     }
     final digits = value!.replaceAll(RegExp(r'\D'), '');
     if (digits.length < 10) {
-      return 'Telefon en az 10 rakam olmalı';
+      return 'Telefon en az 10 rakam olmali';
     }
     return null;
   }
@@ -242,7 +241,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
     }
     final number = double.tryParse(value.trim().replaceAll(',', '.'));
     if (number == null || number <= 0) {
-      return 'Geçerli bir sayı gir';
+      return 'Gecerli bir sayi gir';
     }
     return null;
   }
@@ -250,7 +249,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('İlan düzenle')),
+      appBar: AppBar(title: const Text('Ilan duzenle')),
       body: SafeArea(
         child: Form(
           key: _formKey,
@@ -258,17 +257,17 @@ class _EditListingScreenState extends State<EditListingScreen> {
             padding: const EdgeInsets.all(16),
             children: [
               _FormPanel(
-                title: 'Ürün bilgileri',
+                title: 'Urun bilgileri',
                 children: [
                   TextFormField(
                     controller: _titleController,
-                    decoration: const InputDecoration(labelText: 'Başlık'),
+                    decoration: const InputDecoration(labelText: 'Baslik'),
                     validator: _titleValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(labelText: 'Açıklama'),
+                    decoration: const InputDecoration(labelText: 'Aciklama'),
                     minLines: 3,
                     maxLines: 5,
                     validator: _descriptionValidator,
@@ -282,7 +281,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                   ),
                   const SizedBox(height: 12),
                   _DropdownField(
-                    label: 'Ağaç türü',
+                    label: 'Agac turu',
                     value: _woodType,
                     items: AppConstants.woodTypes,
                     onChanged: (value) => setState(() => _woodType = value),
@@ -295,16 +294,14 @@ class _EditListingScreenState extends State<EditListingScreen> {
                         child: TextFormField(
                           controller: _amountController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Miktar',
-                          ),
+                          decoration: const InputDecoration(labelText: 'Miktar'),
                           validator: _numberValidator,
                         ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: _DropdownField(
-                          label: 'Ölçü birimi',
+                          label: 'Olcu birimi',
                           value: _unit,
                           items: AppConstants.units,
                           onChanged: (value) => setState(() => _unit = value),
@@ -323,17 +320,24 @@ class _EditListingScreenState extends State<EditListingScreen> {
               ),
               const SizedBox(height: 14),
               _FormPanel(
-                title: 'Konum ve satış',
+                title: 'Konum ve satis',
                 children: [
+                  _DropdownField(
+                    label: 'Ilan durumu',
+                    value: _status,
+                    items: AppConstants.listingStatuses,
+                    onChanged: (value) => setState(() => _status = value),
+                  ),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _cityController,
-                    decoration: const InputDecoration(labelText: 'Şehir'),
+                    decoration: const InputDecoration(labelText: 'Sehir'),
                     validator: _cityValidator,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _districtController,
-                    decoration: const InputDecoration(labelText: 'İlçe'),
+                    decoration: const InputDecoration(labelText: 'Ilce'),
                     validator: _districtValidator,
                   ),
                   const SizedBox(height: 12),
@@ -348,7 +352,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                   SwitchListTile(
                     value: _hasDelivery,
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Nakliye var mı?'),
+                    title: const Text('Nakliye var mi?'),
                     activeThumbColor: AppConstants.forestGreen,
                     onChanged: (value) => setState(() => _hasDelivery = value),
                   ),
@@ -371,7 +375,7 @@ class _EditListingScreenState extends State<EditListingScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
                     : const Icon(Icons.save_outlined),
-                label: Text(_isSaving ? 'Kaydediliyor' : 'Güncelle'),
+                label: Text(_isSaving ? 'Kaydediliyor' : 'Guncelle'),
               ),
             ],
           ),

@@ -135,9 +135,11 @@ class _MyListingsHero extends StatelessWidget {
     final name = profile?.displayName ?? 'Hesabin';
     final email = profile?.email ?? '';
     final total = listings.length;
-    final categories = listings
-        .map((listing) => listing.category)
-        .toSet()
+    final activeCount = listings
+        .where((listing) => listing.status == AppConstants.activeStatus)
+        .length;
+    final soldCount = listings
+        .where((listing) => listing.status == AppConstants.soldStatus)
         .length;
 
     return Container(
@@ -204,7 +206,7 @@ class _MyListingsHero extends StatelessWidget {
             children: [
               Expanded(
                 child: _HeroMetric(
-                  label: 'Aktif ilan',
+                  label: 'Toplam ilan',
                   value: total.toString(),
                   icon: Icons.storefront_outlined,
                 ),
@@ -212,9 +214,17 @@ class _MyListingsHero extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _HeroMetric(
-                  label: 'Kategori',
-                  value: isEmpty ? '0' : categories.toString(),
-                  icon: Icons.category_outlined,
+                  label: 'Aktif',
+                  value: activeCount.toString(),
+                  icon: Icons.bolt_outlined,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HeroMetric(
+                  label: 'Satildi',
+                  value: soldCount.toString(),
+                  icon: Icons.check_circle_outline,
                 ),
               ),
             ],
@@ -223,7 +233,7 @@ class _MyListingsHero extends StatelessWidget {
           Text(
             isEmpty
                 ? 'Hesabin hazir. Simdi ilk ilanini ekleyip koleksiyonunu olusturabilirsin.'
-                : 'Duzenleme ve silme islemlerini ilan detayindan yonetebilirsin.',
+                : 'Durumlari ilan duzenleme ekranindan aktif, rezerve veya satildi olarak yonetebilirsin.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Colors.white.withValues(alpha: 0.78),
               height: 1.35,

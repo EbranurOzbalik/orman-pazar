@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../constants/app_constants.dart';
+
 class ListingModel {
   const ListingModel({
     required this.id,
@@ -17,6 +19,7 @@ class ListingModel {
     required this.phone,
     required this.sellerId,
     required this.sellerName,
+    required this.status,
     required this.createdAt,
   });
 
@@ -35,10 +38,9 @@ class ListingModel {
   final String phone;
   final String sellerId;
   final String sellerName;
+  final String status;
   final DateTime createdAt;
 
-  // Firestore'a yazılacak sade Map yapısı. id alanını belge id'si olarak
-  // tuttuğumuz için map içine eklemiyoruz.
   ListingModel copyWith({
     String? id,
     String? title,
@@ -55,6 +57,7 @@ class ListingModel {
     String? phone,
     String? sellerId,
     String? sellerName,
+    String? status,
     DateTime? createdAt,
   }) {
     return ListingModel(
@@ -73,6 +76,7 @@ class ListingModel {
       phone: phone ?? this.phone,
       sellerId: sellerId ?? this.sellerId,
       sellerName: sellerName ?? this.sellerName,
+      status: status ?? this.status,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -93,31 +97,115 @@ class ListingModel {
       'phone': phone,
       'sellerId': sellerId,
       'sellerName': sellerName,
+      'status': status,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
 
-  // Firestore belge id'si data map'in içinde gelmez. Bu yüzden document.id
-  // servis katmanından buraya ayrıca gönderilir.
   factory ListingModel.fromMap(String id, Map<String, dynamic> map) {
     return ListingModel(
       id: id,
       title: map['title'] as String? ?? '',
       description: map['description'] as String? ?? '',
-      category: map['category'] as String? ?? '',
-      woodType: map['woodType'] as String? ?? '',
+      category: _normalizeCategory(map['category'] as String?),
+      woodType: _normalizeWoodType(map['woodType'] as String?),
       amount: _toDouble(map['amount']),
-      unit: map['unit'] as String? ?? '',
+      unit: _normalizeUnit(map['unit'] as String?),
       price: _toDouble(map['price']),
       city: map['city'] as String? ?? '',
       district: map['district'] as String? ?? '',
-      moistureStatus: map['moistureStatus'] as String? ?? '',
+      moistureStatus: _normalizeMoistureStatus(map['moistureStatus'] as String?),
       hasDelivery: map['hasDelivery'] as bool? ?? false,
       phone: map['phone'] as String? ?? '',
       sellerId: map['sellerId'] as String? ?? '',
       sellerName: map['sellerName'] as String? ?? '',
+      status: _normalizeStatus(map['status'] as String?),
       createdAt: _toDateTime(map['createdAt']),
     );
+  }
+
+  static String _normalizeStatus(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return AppConstants.activeStatus;
+    }
+
+    final normalized = value.trim().toLowerCase();
+    if (normalized == AppConstants.reservedStatus.toLowerCase()) {
+      return AppConstants.reservedStatus;
+    }
+    if (normalized == AppConstants.soldStatus.toLowerCase()) {
+      return AppConstants.soldStatus;
+    }
+    return AppConstants.activeStatus;
+  }
+
+  static String _normalizeCategory(String? value) {
+    switch ((value ?? '').trim().toLowerCase()) {
+      case 'yakacak odun':
+        return 'Yakacak Odun';
+      case 'kereste':
+        return 'Kereste';
+      case 'tomruk':
+        return 'Tomruk';
+      case 'talaş':
+      case 'talas':
+        return 'Talas';
+      case 'diğer':
+      case 'diger':
+        return 'Diger';
+      default:
+        return value?.trim().isNotEmpty == true ? value!.trim() : 'Diger';
+    }
+  }
+
+  static String _normalizeWoodType(String? value) {
+    switch ((value ?? '').trim().toLowerCase()) {
+      case 'meşe':
+      case 'mese':
+        return 'Mese';
+      case 'çam':
+      case 'cam':
+        return 'Cam';
+      case 'gürgen':
+      case 'gurgen':
+        return 'Gurgen';
+      case 'kayın':
+      case 'kayin':
+        return 'Kayin';
+      case 'diğer':
+      case 'diger':
+        return 'Diger';
+      default:
+        return value?.trim().isNotEmpty == true ? value!.trim() : 'Diger';
+    }
+  }
+
+  static String _normalizeUnit(String? value) {
+    switch ((value ?? '').trim().toLowerCase()) {
+      case 'm³':
+      case 'm3':
+        return 'm3';
+      case 'çuval':
+      case 'cuval':
+        return 'cuval';
+      default:
+        return value?.trim().isNotEmpty == true ? value!.trim() : 'kg';
+    }
+  }
+
+  static String _normalizeMoistureStatus(String? value) {
+    switch ((value ?? '').trim().toLowerCase()) {
+      case 'yaş':
+      case 'yas':
+        return 'Yas';
+      case 'karışık':
+      case 'karisik':
+        return 'Karisik';
+      case 'kuru':
+        return 'Kuru';
+      default:
+        return value?.trim().isNotEmpty == true ? value!.trim() : 'Kuru';
+    }
   }
 
   static double _toDouble(dynamic value) {

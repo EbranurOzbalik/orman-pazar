@@ -127,6 +127,12 @@ class ListingDetailScreen extends StatelessWidget {
             subtitle: 'Urunun temel ozellikleri ve satis ayrintilari.',
             children: [
               _DetailRow(
+                icon: Icons.bolt_outlined,
+                label: 'Durum',
+                value: listing.status,
+                valueColor: AppConstants.listingStatusColor(listing.status),
+              ),
+              _DetailRow(
                 icon: Icons.person_outline,
                 label: 'Satici',
                 value: listing.sellerName.isEmpty
@@ -196,6 +202,8 @@ class _DetailHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final statusColor = AppConstants.listingStatusColor(listing.status);
+
     return Container(
       decoration: BoxDecoration(
         color: AppConstants.deepGreen,
@@ -221,6 +229,11 @@ class _DetailHero extends StatelessWidget {
               _HeroChip(
                 icon: _categoryIcon(listing.category),
                 text: listing.category,
+              ),
+              _HeroChip(
+                icon: AppConstants.listingStatusIcon(listing.status),
+                text: listing.status,
+                accentColor: statusColor,
               ),
               if (isOwner)
                 const _HeroChip(
@@ -299,7 +312,6 @@ class _DetailHero extends StatelessWidget {
       case 'Tomruk':
         return Icons.forest_outlined;
       case 'Talas':
-      case 'Talaş':
         return Icons.grass_outlined;
       default:
         return Icons.eco_outlined;
@@ -308,10 +320,15 @@ class _DetailHero extends StatelessWidget {
 }
 
 class _HeroChip extends StatelessWidget {
-  const _HeroChip({required this.icon, required this.text});
+  const _HeroChip({
+    required this.icon,
+    required this.text,
+    this.accentColor = AppConstants.amber,
+  });
 
   final IconData icon;
   final String text;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -325,7 +342,7 @@ class _HeroChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppConstants.amber, size: 15),
+          Icon(icon, color: accentColor, size: 15),
           const SizedBox(width: 6),
           Text(
             text,
@@ -401,6 +418,8 @@ class _ContactPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final statusColor = AppConstants.listingStatusColor(listing.status);
+
     return Container(
       decoration: BoxDecoration(
         color: AppConstants.cardBackground,
@@ -408,43 +427,79 @@ class _ContactPanel extends StatelessWidget {
         border: Border.all(color: AppConstants.border),
       ),
       padding: const EdgeInsets.all(16),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: AppConstants.mossGreen,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.call_outlined,
-              color: AppConstants.forestGreen,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Iletisim',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: AppConstants.deepGreen,
-                    fontWeight: FontWeight.w900,
-                  ),
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppConstants.mossGreen,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  listing.phone,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppConstants.deepGreen,
-                    fontWeight: FontWeight.w800,
-                  ),
+                child: const Icon(
+                  Icons.call_outlined,
+                  color: AppConstants.forestGreen,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Iletisim',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: AppConstants.deepGreen,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      listing.phone,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppConstants.deepGreen,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
+          if (listing.status != AppConstants.activeStatus) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: statusColor.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    AppConstants.listingStatusIcon(listing.status),
+                    color: statusColor,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      listing.status == AppConstants.soldStatus
+                          ? 'Bu ilan satildi olarak isaretlenmis.'
+                          : 'Bu ilan su anda rezerve olarak isaretlenmis.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppConstants.deepGreen,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -502,12 +557,14 @@ class _DetailRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    this.valueColor,
     this.isLast = false,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final Color? valueColor;
   final bool isLast;
 
   @override
@@ -547,7 +604,7 @@ class _DetailRow extends StatelessWidget {
                 Text(
                   value,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: AppConstants.deepGreen,
+                    color: valueColor ?? AppConstants.deepGreen,
                     fontWeight: FontWeight.w800,
                   ),
                 ),

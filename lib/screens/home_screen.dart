@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Timer? _searchDebounce;
 
   String _selectedCategory = AppConstants.allCategories;
+  String _selectedStatus = AppConstants.allStatuses;
   String _searchText = '';
 
   @override
@@ -58,13 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
         .replaceAll('ü', 'u')
         .replaceAll('ş', 's')
         .replaceAll('ö', 'o')
-        .replaceAll('ç', 'c')
-        .replaceAll('İ', 'i')
-        .replaceAll('Ğ', 'g')
-        .replaceAll('Ü', 'u')
-        .replaceAll('Ş', 's')
-        .replaceAll('Ö', 'o')
-        .replaceAll('Ç', 'c');
+        .replaceAll('ç', 'c');
   }
 
   List<ListingModel> _filterListings(List<ListingModel> listings) {
@@ -74,6 +69,9 @@ class _HomeScreenState extends State<HomeScreen> {
       final matchesCategory =
           _selectedCategory == AppConstants.allCategories ||
           listing.category == _selectedCategory;
+      final matchesStatus =
+          _selectedStatus == AppConstants.allStatuses ||
+          listing.status == _selectedStatus;
 
       final searchableText = [
         listing.title,
@@ -86,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final matchesSearch = query.isEmpty || searchableText.contains(query);
 
-      return matchesCategory && matchesSearch;
+      return matchesCategory && matchesStatus && matchesSearch;
     }).toList();
   }
 
@@ -112,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     ScaffoldMessenger.of(
       context,
-    ).showSnackBar(const SnackBar(content: Text('Çıkış yapıldı')));
+    ).showSnackBar(const SnackBar(content: Text('Cikis yapildi')));
   }
 
   @override
@@ -137,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                     icon: const Icon(Icons.login, color: Colors.white),
                     label: const Text(
-                      'Giriş',
+                      'Giris',
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
@@ -155,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: const Icon(Icons.account_circle_outlined),
                     ),
                     IconButton(
-                      tooltip: 'Benim ilanlarım',
+                      tooltip: 'Benim ilanlarim',
                       onPressed: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(builder: (_) => MyListingsScreen()),
@@ -164,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: const Icon(Icons.inventory_2_outlined),
                     ),
                     IconButton(
-                      tooltip: 'Çıkış yap',
+                      tooltip: 'Cikis yap',
                       onPressed: _signOut,
                       icon: const Icon(Icons.logout),
                     ),
@@ -182,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (snapshot.hasError) {
                 return _StateMessage(
                   icon: Icons.error_outline,
-                  title: 'İlanlar yüklenemedi',
+                  title: 'Ilanlar yuklenemedi',
                   message: snapshot.error.toString(),
                 );
               }
@@ -196,13 +194,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     controller: _searchController,
                     searchFocusNode: _searchFocusNode,
                     selectedCategory: _selectedCategory,
+                    selectedStatus: _selectedStatus,
                     listingCount: allListings.length,
                     visibleCount: filteredListings.length,
-                    onSearchChanged: (value) {
-                      _queueSearchUpdate(value);
-                    },
+                    onSearchChanged: _queueSearchUpdate,
                     onCategorySelected: (category) {
                       setState(() => _selectedCategory = category);
+                    },
+                    onStatusSelected: (status) {
+                      setState(() => _selectedStatus = status);
                     },
                   ),
                   Expanded(
@@ -226,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _openAddListing(user),
             icon: const Icon(Icons.add),
-            label: const Text('İlan ekle'),
+            label: const Text('Ilan ekle'),
           ),
         );
       },
@@ -239,23 +239,28 @@ class _SearchAndFilters extends StatelessWidget {
     required this.controller,
     required this.searchFocusNode,
     required this.selectedCategory,
+    required this.selectedStatus,
     required this.listingCount,
     required this.visibleCount,
     required this.onSearchChanged,
     required this.onCategorySelected,
+    required this.onStatusSelected,
   });
 
   final TextEditingController controller;
   final FocusNode searchFocusNode;
   final String selectedCategory;
+  final String selectedStatus;
   final int listingCount;
   final int visibleCount;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
+  final ValueChanged<String> onStatusSelected;
 
   @override
   Widget build(BuildContext context) {
     final categories = [AppConstants.allCategories, ...AppConstants.categories];
+    final statuses = [AppConstants.allStatuses, ...AppConstants.listingStatuses];
 
     return Container(
       decoration: const BoxDecoration(
@@ -289,7 +294,7 @@ class _SearchAndFilters extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Orman ürünleri pazarı',
+                      'Orman urunleri pazari',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -297,7 +302,7 @@ class _SearchAndFilters extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Odun, tomruk, kereste ve talaş ilanlarını keşfet.',
+                      'Odun, tomruk, kereste ve talas ilanlarini kesfet.',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -323,12 +328,12 @@ class _SearchAndFilters extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
             decoration: InputDecoration(
-              hintText: 'Başlık, şehir, ilçe veya ağaç türü ara',
+              hintText: 'Baslik, sehir, ilce veya agac turu ara',
               prefixIcon: const Icon(Icons.search),
               suffixIcon: controller.text.isEmpty
                   ? null
                   : IconButton(
-                      tooltip: 'Aramayı temizle',
+                      tooltip: 'Aramayi temizle',
                       onPressed: () {
                         controller.clear();
                         onSearchChanged('');
@@ -339,40 +344,92 @@ class _SearchAndFilters extends StatelessWidget {
             onChanged: onSearchChanged,
           ),
           const SizedBox(height: 10),
-          SizedBox(
-            height: 38,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: categories.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                final isSelected = category == selectedCategory;
+          _FilterSection(
+            title: 'Kategori',
+            child: SizedBox(
+              height: 38,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  final isSelected = category == selectedCategory;
 
-                return ChoiceChip(
-                  avatar: Icon(
-                    _categoryIcon(category),
-                    size: 16,
-                    color: isSelected
-                        ? AppConstants.deepGreen
-                        : AppConstants.forestGreen,
-                  ),
-                  label: Text(category),
-                  selected: isSelected,
-                  onSelected: (_) => onCategorySelected(category),
-                  selectedColor: AppConstants.amber,
-                  backgroundColor: Colors.white,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? AppConstants.deepGreen
-                        : AppConstants.forestGreen,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  side: BorderSide(
-                    color: isSelected ? AppConstants.amber : Colors.white,
-                  ),
-                );
-              },
+                  return ChoiceChip(
+                    avatar: Icon(
+                      _categoryIcon(category),
+                      size: 16,
+                      color: isSelected
+                          ? AppConstants.deepGreen
+                          : AppConstants.forestGreen,
+                    ),
+                    label: Text(category),
+                    selected: isSelected,
+                    onSelected: (_) => onCategorySelected(category),
+                    selectedColor: AppConstants.amber,
+                    backgroundColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: isSelected
+                          ? AppConstants.deepGreen
+                          : AppConstants.forestGreen,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    side: BorderSide(
+                      color: isSelected ? AppConstants.amber : Colors.white,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _FilterSection(
+            title: 'Durum',
+            child: SizedBox(
+              height: 38,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: statuses.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  final status = statuses[index];
+                  final isSelected = status == selectedStatus;
+                  final chipColor = status == AppConstants.allStatuses
+                      ? Colors.white
+                      : AppConstants.listingStatusColor(status);
+
+                  return ChoiceChip(
+                    avatar: Icon(
+                      status == AppConstants.allStatuses
+                          ? Icons.tune_outlined
+                          : AppConstants.listingStatusIcon(status),
+                      size: 16,
+                      color: isSelected
+                          ? AppConstants.deepGreen
+                          : chipColor == Colors.white
+                          ? AppConstants.forestGreen
+                          : chipColor,
+                    ),
+                    label: Text(status),
+                    selected: isSelected,
+                    onSelected: (_) => onStatusSelected(status),
+                    selectedColor: AppConstants.amber,
+                    backgroundColor: Colors.white,
+                    labelStyle: TextStyle(
+                      color: isSelected
+                          ? AppConstants.deepGreen
+                          : chipColor == Colors.white
+                          ? AppConstants.forestGreen
+                          : chipColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    side: BorderSide(
+                      color: isSelected ? AppConstants.amber : Colors.white,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
@@ -390,11 +447,36 @@ class _SearchAndFilters extends StatelessWidget {
         return Icons.carpenter_outlined;
       case 'Tomruk':
         return Icons.forest_outlined;
-      case 'Talaş':
+      case 'Talas':
         return Icons.grass_outlined;
       default:
         return Icons.eco_outlined;
     }
+  }
+}
+
+class _FilterSection extends StatelessWidget {
+  const _FilterSection({required this.title, required this.child});
+
+  final String title;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: Colors.white.withValues(alpha: 0.78),
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 6),
+        child,
+      ],
+    );
   }
 }
 
@@ -439,7 +521,7 @@ class _MiniStats extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           Text(
-            '$visibleCount görünen',
+            '$visibleCount gorunen',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
@@ -467,16 +549,16 @@ class _ListingsContent extends StatelessWidget {
     if (!hasAnyListing) {
       return const _StateMessage(
         icon: Icons.forest_outlined,
-        title: 'Henüz ilan yok',
-        message: 'İlk orman ürünleri ilanını ekleyerek başlayabilirsin.',
+        title: 'Henuz ilan yok',
+        message: 'Ilk orman urunleri ilanini ekleyerek baslayabilirsin.',
       );
     }
 
     if (listings.isEmpty) {
       return const _StateMessage(
         icon: Icons.filter_alt_off_outlined,
-        title: 'Sonuç bulunamadı',
-        message: 'Arama veya kategori filtresini değiştirerek tekrar dene.',
+        title: 'Sonuc bulunamadi',
+        message: 'Arama veya filtreleri degistirerek tekrar dene.',
       );
     }
 
@@ -507,7 +589,7 @@ class _LoadingState extends StatelessWidget {
         children: [
           CircularProgressIndicator(),
           SizedBox(height: 12),
-          Text('İlanlar yükleniyor...'),
+          Text('Ilanlar yukleniyor...'),
         ],
       ),
     );

@@ -7,6 +7,7 @@ class AppUserModel {
     required this.email,
     required this.phone,
     required this.createdAt,
+    this.favoriteListingIds = const [],
   });
 
   final String id;
@@ -14,6 +15,7 @@ class AppUserModel {
   final String email;
   final String phone;
   final DateTime createdAt;
+  final List<String> favoriteListingIds;
 
   String get displayName {
     if (name.trim().isNotEmpty) {
@@ -28,26 +30,32 @@ class AppUserModel {
     return 'Kullanici';
   }
 
-  // Firestore'da belge id'si olarak Firebase Auth uid kullanıyoruz.
-  // Bu yüzden uid map içine ayrıca yazılmıyor.
   Map<String, dynamic> toMap() {
     return {
       'name': name,
       'email': email,
       'phone': phone,
+      'favoriteListingIds': favoriteListingIds,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
 
-  // Firestore document id, Auth uid ile aynı olduğu için modele id olarak gelir.
   factory AppUserModel.fromMap(String id, Map<String, dynamic> map) {
     return AppUserModel(
       id: id,
       name: map['name'] as String? ?? '',
       email: map['email'] as String? ?? '',
       phone: map['phone'] as String? ?? '',
+      favoriteListingIds: _toStringList(map['favoriteListingIds']),
       createdAt: _toDateTime(map['createdAt']),
     );
+  }
+
+  static List<String> _toStringList(dynamic value) {
+    if (value is List) {
+      return value.whereType<String>().toList();
+    }
+    return const [];
   }
 
   static DateTime _toDateTime(dynamic value) {

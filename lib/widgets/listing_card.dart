@@ -4,10 +4,18 @@ import '../constants/app_constants.dart';
 import '../models/listing_model.dart';
 
 class ListingCard extends StatelessWidget {
-  const ListingCard({super.key, required this.listing, required this.onTap});
+  const ListingCard({
+    super.key,
+    required this.listing,
+    required this.onTap,
+    this.isFavorite = false,
+    this.onFavoriteTap,
+  });
 
   final ListingModel listing;
   final VoidCallback onTap;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteTap;
 
   @override
   Widget build(BuildContext context) {
@@ -80,6 +88,13 @@ class ListingCard extends StatelessWidget {
                                       ),
                                     ),
                                     const SizedBox(width: 8),
+                                    if (onFavoriteTap != null)
+                                      _FavoriteButton(
+                                        isFavorite: isFavorite,
+                                        onTap: onFavoriteTap!,
+                                      ),
+                                    if (onFavoriteTap == null)
+                                      const SizedBox(width: 6),
                                     _StatusBadge(
                                       text: listing.status,
                                       color: statusColor,
@@ -224,6 +239,36 @@ class ListingCard extends StatelessWidget {
       default:
         return AppConstants.leafGreen;
     }
+  }
+}
+
+class _FavoriteButton extends StatelessWidget {
+  const _FavoriteButton({required this.isFavorite, required this.onTap});
+
+  final bool isFavorite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      height: 34,
+      margin: const EdgeInsets.only(right: 8),
+      decoration: BoxDecoration(
+        color: (isFavorite ? AppConstants.clay : AppConstants.cream),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        tooltip: isFavorite ? 'Favoriden cikar' : 'Favorilere ekle',
+        onPressed: onTap,
+        icon: Icon(
+          isFavorite ? Icons.favorite : Icons.favorite_border,
+          size: 18,
+          color: isFavorite ? Colors.white : AppConstants.woodBrown,
+        ),
+      ),
+    );
   }
 }
 

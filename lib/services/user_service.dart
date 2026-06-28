@@ -13,8 +13,6 @@ class UserService {
     return _firestore.collection(AppConstants.usersCollection);
   }
 
-  // Yeni kayıt olan kullanıcıyı `users/{uid}` dokümanı olarak saklar.
-  // set kullanıyoruz; aynı uid ile tekrar çağrılırsa doküman güvenli şekilde güncellenir.
   Future<void> saveUser(AppUserModel user) async {
     await _usersCollection.doc(user.id).set(user.toMap());
   }
@@ -35,6 +33,7 @@ class UserService {
             ? existingUser.email
             : email,
         phone: existingUser.phone.trim().isNotEmpty ? existingUser.phone : phone,
+        favoriteListingIds: existingUser.favoriteListingIds,
         createdAt: existingUser.createdAt,
       );
 
@@ -60,7 +59,6 @@ class UserService {
         .set(user.toMap(), SetOptions(merge: true));
   }
 
-  // İleride profil ekranı için tek kullanıcı dokümanını okumamız gerekebilir.
   Future<AppUserModel?> getUserById(String id) async {
     final doc = await _usersCollection.doc(id).get();
 
@@ -80,5 +78,47 @@ class UserService {
 
       return AppUserModel.fromMap(doc.id, data);
     });
+  }
+
+  Stream<Set<String>> watchFavoriteIds(String userId) {
+    return _usersCollection.doc(userId).snapshots().map((doc) {
+      final data = doc.data();
+      if (!doc.exists || data == null) {
+        return <String>{};
+      }
+
+      final user = AppUserModel.fromMap(doc.id, data);
+      return user.favoriteListingIds.toSet();
+    });
+  }
+
+  Future<void> addFavorite({
+    required String userId,
+    required String listingId,
+  }) async {
+    await _usersCollection.doc(userId).set({
+      'favoriteListingIds': FieldValue.arrayUnion([listingId]),
+    }, SetOptions(merge: true));
+  }
+
+  Future<void> removeFavorite({
+    required String userId,
+    required String listingId,
+  }) async {
+    await _usersCollection.doc(userId).set({
+      'favoriteListingIds': FieldValue.arrayRemove([listingId]),
+    }, SetOptions(merge: true));
+  }
+
+  Future<bool> toggleFavorite({
+    required String userId,
+    required String listingId,
+    required bool isFavorite,
+  }) {
+    if (isFavorite) {
+      return removeFavorite(userId: userId, listingId: listingId).then((_) => false);
+    }
+
+    return addFavorite(userId: userId, listingId: listingId).then((_) => true);
   }
 }

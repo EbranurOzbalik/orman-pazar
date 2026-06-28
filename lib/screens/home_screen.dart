@@ -7,8 +7,10 @@ import '../constants/app_constants.dart';
 import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
+import '../services/user_service.dart';
 import '../widgets/listing_card.dart';
 import 'add_listing_screen.dart';
+import 'favorites_screen.dart';
 import 'listing_detail_screen.dart';
 import 'login_screen.dart';
 import 'my_listings_screen.dart';
@@ -24,6 +26,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ListingService _listingService = ListingService();
   final AuthService _authService = AuthService();
+  final UserService _userService = UserService();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Timer? _searchDebounce;
@@ -101,6 +104,41 @@ class _HomeScreenState extends State<HomeScreen> {
     ).push(MaterialPageRoute(builder: (_) => const AddListingScreen()));
   }
 
+  Future<void> _toggleFavorite({
+    required User? user,
+    required ListingModel listing,
+    required bool isFavorite,
+  }) async {
+    if (user == null) {
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+
+    final nextValue = await _userService.toggleFavorite(
+      userId: user.uid,
+      listingId: listing.id,
+      isFavorite: isFavorite,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          nextValue ? 'Ilan favorilere eklendi' : 'Ilan favorilerden cikartildi',
+        ),
+      ),
+    );
+  }
+
   Future<void> _signOut() async {
     await _authService.signOut();
 
@@ -120,114 +158,149 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context, authSnapshot) {
         final user = authSnapshot.data;
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text(AppConstants.appName),
-            actions: [
-              if (user == null)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: TextButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.login, color: Colors.white),
-                    label: const Text(
-                      'Giris',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                )
-              else
-                Row(
-                  children: [
-                    IconButton(
-                      tooltip: 'Profilim',
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => ProfileScreen()),
-                        );
-                      },
-                      icon: const Icon(Icons.account_circle_outlined),
-                    ),
-                    IconButton(
-                      tooltip: 'Benim ilanlarim',
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => MyListingsScreen()),
-                        );
-                      },
-                      icon: const Icon(Icons.inventory_2_outlined),
-                    ),
-                    IconButton(
-                      tooltip: 'Cikis yap',
-                      onPressed: _signOut,
-                      icon: const Icon(Icons.logout),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          body: StreamBuilder<List<ListingModel>>(
-            stream: _listingService.getListings(),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const _LoadingState();
-              }
+        return StreamBuilder<Set<String>>(
+          stream: user == null
+              ? Stream<Set<String>>.value(<String>{})
+              : _userService.watchFavoriteIds(user.uid),
+          builder: (context, favoritesSnapshot) {
+            final favoriteIds = favoritesSnapshot.data ?? <String>{};
 
-              if (snapshot.hasError) {
-                return _StateMessage(
-                  icon: Icons.error_outline,
-                  title: 'Ilanlar yuklenemedi',
-                  message: snapshot.error.toString(),
-                );
-              }
-
-              final allListings = snapshot.data ?? [];
-              final filteredListings = _filterListings(allListings);
-
-              return Column(
-                children: [
-                  _SearchAndFilters(
-                    controller: _searchController,
-                    searchFocusNode: _searchFocusNode,
-                    selectedCategory: _selectedCategory,
-                    selectedStatus: _selectedStatus,
-                    listingCount: allListings.length,
-                    visibleCount: filteredListings.length,
-                    onSearchChanged: _queueSearchUpdate,
-                    onCategorySelected: (category) {
-                      setState(() => _selectedCategory = category);
-                    },
-                    onStatusSelected: (status) {
-                      setState(() => _selectedStatus = status);
-                    },
-                  ),
-                  Expanded(
-                    child: _ListingsContent(
-                      listings: filteredListings,
-                      hasAnyListing: allListings.isNotEmpty,
-                      onOpenListing: (listing) {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ListingDetailScreen(listing: listing),
-                          ),
-                        );
-                      },
+            return Scaffold(
+              appBar: AppBar(
+                title: const Text(AppConstants.appName),
+                actions: [
+                  if (user == null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: TextButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.login, color: Colors.white),
+                        label: const Text(
+                          'Giris',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    )
+                  else
+                    Row(
+                      children: [
+                        IconButton(
+                          tooltip: 'Favorilerim',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => FavoritesScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.favorite_border),
+                        ),
+                        IconButton(
+                          tooltip: 'Profilim',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ProfileScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.account_circle_outlined),
+                        ),
+                        IconButton(
+                          tooltip: 'Benim ilanlarim',
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => MyListingsScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.inventory_2_outlined),
+                        ),
+                        IconButton(
+                          tooltip: 'Cikis yap',
+                          onPressed: _signOut,
+                          icon: const Icon(Icons.logout),
+                        ),
+                      ],
                     ),
-                  ),
                 ],
-              );
-            },
-          ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _openAddListing(user),
-            icon: const Icon(Icons.add),
-            label: const Text('Ilan ekle'),
-          ),
+              ),
+              body: StreamBuilder<List<ListingModel>>(
+                stream: _listingService.getListings(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const _LoadingState();
+                  }
+
+                  if (snapshot.hasError) {
+                    return _StateMessage(
+                      icon: Icons.error_outline,
+                      title: 'Ilanlar yuklenemedi',
+                      message: snapshot.error.toString(),
+                    );
+                  }
+
+                  final allListings = snapshot.data ?? [];
+                  final filteredListings = _filterListings(allListings);
+
+                  return Column(
+                    children: [
+                      _SearchAndFilters(
+                        controller: _searchController,
+                        searchFocusNode: _searchFocusNode,
+                        selectedCategory: _selectedCategory,
+                        selectedStatus: _selectedStatus,
+                        listingCount: allListings.length,
+                        visibleCount: filteredListings.length,
+                        onSearchChanged: _queueSearchUpdate,
+                        onCategorySelected: (category) {
+                          setState(() => _selectedCategory = category);
+                        },
+                        onStatusSelected: (status) {
+                          setState(() => _selectedStatus = status);
+                        },
+                      ),
+                      Expanded(
+                        child: _ListingsContent(
+                          listings: filteredListings,
+                          favoriteIds: favoriteIds,
+                          hasAnyListing: allListings.isNotEmpty,
+                          onFavoriteTap: (listing) {
+                            _toggleFavorite(
+                              user: user,
+                              listing: listing,
+                              isFavorite: favoriteIds.contains(listing.id),
+                            );
+                          },
+                          onOpenListing: (listing) {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ListingDetailScreen(
+                                  listing: listing,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              floatingActionButton: FloatingActionButton.extended(
+                onPressed: () => _openAddListing(user),
+                icon: const Icon(Icons.add),
+                label: const Text('Ilan ekle'),
+              ),
+            );
+          },
         );
       },
     );
@@ -536,13 +609,17 @@ class _MiniStats extends StatelessWidget {
 class _ListingsContent extends StatelessWidget {
   const _ListingsContent({
     required this.listings,
+    required this.favoriteIds,
     required this.hasAnyListing,
     required this.onOpenListing,
+    required this.onFavoriteTap,
   });
 
   final List<ListingModel> listings;
+  final Set<String> favoriteIds;
   final bool hasAnyListing;
   final ValueChanged<ListingModel> onOpenListing;
+  final ValueChanged<ListingModel> onFavoriteTap;
 
   @override
   Widget build(BuildContext context) {
@@ -571,6 +648,8 @@ class _ListingsContent extends StatelessWidget {
 
         return ListingCard(
           listing: listing,
+          isFavorite: favoriteIds.contains(listing.id),
+          onFavoriteTap: () => onFavoriteTap(listing),
           onTap: () => onOpenListing(listing),
         );
       },

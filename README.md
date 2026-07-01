@@ -29,6 +29,7 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 - Sadece ilan sahibinin ilan duzenleyip silebilmesi
 - Ilan durumunu aktif, rezerve ve satildi olarak yonetebilme
 - Favorilere ekleme ve favori ilanlari ayri ekranda gorme
+- Satici profili ve saticinin diger ilanlarini goruntuleme
 - Firestore servis katmani uzerinden veri yonetimi
 - Profil, satici bilgisi ve temel kullanici altyapisi
 
@@ -124,6 +125,14 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 - Ilan detay ekranina favori ekleme ve cikarma aksiyonu baglandi.
 - Profil ekraninda favori sayisi gorunur hale getirildi.
 
+### Gun 12 - Satici profili akisi
+
+- Ilan detayindan satici bilgisi tiklanabilir hale getirildi.
+- `SellerProfileScreen` eklendi.
+- Saticinin telefon, toplam ilan, aktif ilan ve satilan ilan ozeti gosterilmeye baslandi.
+- Saticinin diger ilanlari tek ekranda listelendi.
+- Satici profilinden ilan detayina geri akisi baglandi.
+
 ## Teknik Yapi
 
 ```text
@@ -144,6 +153,7 @@ lib/
     my_listings_screen.dart
     profile_screen.dart
     register_screen.dart
+    seller_profile_screen.dart
   services/
     auth_service.dart
     listing_service.dart

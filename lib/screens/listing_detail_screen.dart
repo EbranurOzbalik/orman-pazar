@@ -7,6 +7,7 @@ import '../services/listing_service.dart';
 import '../services/user_service.dart';
 import 'edit_listing_screen.dart';
 import 'login_screen.dart';
+import 'seller_profile_screen.dart';
 
 class ListingDetailScreen extends StatefulWidget {
   const ListingDetailScreen({super.key, required this.listing});
@@ -30,6 +31,18 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     if (wasUpdated == true && context.mounted) {
       Navigator.of(context).pop();
     }
+  }
+
+  void _openSellerProfile(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => SellerProfileScreen(
+          sellerId: widget.listing.sellerId,
+          sellerName: widget.listing.sellerName,
+          phone: widget.listing.phone,
+        ),
+      ),
+    );
   }
 
   Future<void> _deleteListing(BuildContext context) async {
@@ -182,7 +195,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                 isFavorite: isFavorite,
               ),
               const SizedBox(height: 14),
-              _ContactPanel(listing: widget.listing),
+              _ContactPanel(
+                listing: widget.listing,
+                onOpenSellerProfile: () => _openSellerProfile(context),
+              ),
               const SizedBox(height: 14),
               _InfoPanel(
                 title: 'Ilan bilgileri',
@@ -206,6 +222,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                     value: widget.listing.sellerName.isEmpty
                         ? 'Kullanici'
                         : widget.listing.sellerName,
+                    onTap: () => _openSellerProfile(context),
                   ),
                   _DetailRow(
                     icon: Icons.park_outlined,
@@ -494,9 +511,13 @@ class _HeroMetric extends StatelessWidget {
 }
 
 class _ContactPanel extends StatelessWidget {
-  const _ContactPanel({required this.listing});
+  const _ContactPanel({
+    required this.listing,
+    required this.onOpenSellerProfile,
+  });
 
   final ListingModel listing;
+  final VoidCallback onOpenSellerProfile;
 
   @override
   Widget build(BuildContext context) {
@@ -549,6 +570,12 @@ class _ContactPanel extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            onPressed: onOpenSellerProfile,
+            icon: const Icon(Icons.storefront_outlined),
+            label: const Text('Saticinin diger ilanlari'),
           ),
           if (listing.status != AppConstants.activeStatus) ...[
             const SizedBox(height: 12),
@@ -641,6 +668,7 @@ class _DetailRow extends StatelessWidget {
     required this.value,
     this.valueColor,
     this.isLast = false,
+    this.onTap,
   });
 
   final IconData icon;
@@ -648,52 +676,67 @@ class _DetailRow extends StatelessWidget {
   final String value;
   final Color? valueColor;
   final bool isLast;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: isLast ? 0 : 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppConstants.cream,
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
         borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: AppConstants.mossGreen,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(icon, color: AppConstants.forestGreen, size: 18),
+        onTap: onTap,
+        child: Container(
+          margin: EdgeInsets.only(bottom: isLast ? 0 : 12),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppConstants.cream,
+            borderRadius: BorderRadius.circular(8),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: AppConstants.mutedText,
-                    fontWeight: FontWeight.w700,
-                  ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppConstants.mossGreen,
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: valueColor ?? AppConstants.deepGreen,
-                    fontWeight: FontWeight.w800,
-                  ),
+                child: Icon(icon, color: AppConstants.forestGreen, size: 18),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      label,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: AppConstants.mutedText,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      value,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: valueColor ?? AppConstants.deepGreen,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (onTap != null) ...[
+                const SizedBox(width: 8),
+                const Icon(
+                  Icons.chevron_right,
+                  color: AppConstants.mutedText,
                 ),
               ],
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

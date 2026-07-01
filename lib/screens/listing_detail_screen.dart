@@ -4,18 +4,27 @@ import '../constants/app_constants.dart';
 import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
+import '../services/user_service.dart';
 import 'edit_listing_screen.dart';
+import 'login_screen.dart';
 
-class ListingDetailScreen extends StatelessWidget {
-  ListingDetailScreen({super.key, required this.listing});
+class ListingDetailScreen extends StatefulWidget {
+  const ListingDetailScreen({super.key, required this.listing});
 
   final ListingModel listing;
+
+  @override
+  State<ListingDetailScreen> createState() => _ListingDetailScreenState();
+}
+
+class _ListingDetailScreenState extends State<ListingDetailScreen> {
   final AuthService _authService = AuthService();
   final ListingService _listingService = ListingService();
+  final UserService _userService = UserService();
 
   Future<void> _openEditScreen(BuildContext context) async {
     final wasUpdated = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => EditListingScreen(listing: listing)),
+      MaterialPageRoute(builder: (_) => EditListingScreen(listing: widget.listing)),
     );
 
     if (wasUpdated == true && context.mounted) {
@@ -50,7 +59,7 @@ class ListingDetailScreen extends StatelessWidget {
     }
 
     try {
-      await _listingService.deleteListing(listing.id);
+      await _listingService.deleteListing(widget.listing.id);
 
       if (!context.mounted) {
         return;
@@ -71,118 +80,180 @@ class ListingDetailScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _toggleFavorite({
+    required bool isFavorite,
+  }) async {
+    final user = _authService.currentUser;
+    if (user == null) {
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+
+    final nextValue = await _userService.toggleFavorite(
+      userId: user.uid,
+      listingId: widget.listing.id,
+      isFavorite: isFavorite,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          nextValue ? 'Ilan favorilere eklendi' : 'Ilan favorilerden cikartildi',
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
-    final isOwner = user != null && user.uid == listing.sellerId;
+    final isOwner = user != null && user.uid == widget.listing.sellerId;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Ilan detayi'),
-        actions: [
-          if (isOwner)
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'edit') {
-                  _openEditScreen(context);
-                }
-                if (value == 'delete') {
-                  _deleteListing(context);
-                }
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(
-                  value: 'edit',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit_outlined),
-                      SizedBox(width: 8),
-                      Text('Duzenle'),
-                    ],
-                  ),
+    return StreamBuilder<Set<String>>(
+      stream: user == null
+          ? Stream<Set<String>>.value(<String>{})
+          : _userService.watchFavoriteIds(user.uid),
+      builder: (context, favoriteSnapshot) {
+        final favoriteIds = favoriteSnapshot.data ?? <String>{};
+        final isFavorite = favoriteIds.contains(widget.listing.id);
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('Ilan detayi'),
+            actions: [
+              IconButton(
+                tooltip: isFavorite ? 'Favoriden cikar' : 'Favorilere ekle',
+                onPressed: () => _toggleFavorite(isFavorite: isFavorite),
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
                 ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete_outline, color: Colors.redAccent),
-                      SizedBox(width: 8),
-                      Text('Sil'),
-                    ],
-                  ),
+              ),
+              if (isOwner)
+                PopupMenuButton<String>(
+                  onSelected: (value) {
+                    if (value == 'edit') {
+                      _openEditScreen(context);
+                    }
+                    if (value == 'delete') {
+                      _deleteListing(context);
+                    }
+                  },
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit_outlined),
+                          SizedBox(width: 8),
+                          Text('Duzenle'),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete_outline, color: Colors.redAccent),
+                          SizedBox(width: 8),
+                          Text('Sil'),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-        children: [
-          _DetailHero(listing: listing, isOwner: isOwner),
-          const SizedBox(height: 14),
-          _ContactPanel(listing: listing),
-          const SizedBox(height: 14),
-          _InfoPanel(
-            title: 'Ilan bilgileri',
-            subtitle: 'Urunun temel ozellikleri ve satis ayrintilari.',
+            ],
+          ),
+          body: ListView(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
             children: [
-              _DetailRow(
-                icon: Icons.bolt_outlined,
-                label: 'Durum',
-                value: listing.status,
-                valueColor: AppConstants.listingStatusColor(listing.status),
+              _DetailHero(
+                listing: widget.listing,
+                isOwner: isOwner,
+                isFavorite: isFavorite,
               ),
-              _DetailRow(
-                icon: Icons.person_outline,
-                label: 'Satici',
-                value: listing.sellerName.isEmpty
-                    ? 'Kullanici'
-                    : listing.sellerName,
+              const SizedBox(height: 14),
+              _ContactPanel(listing: widget.listing),
+              const SizedBox(height: 14),
+              _InfoPanel(
+                title: 'Ilan bilgileri',
+                subtitle: 'Urunun temel ozellikleri ve satis ayrintilari.',
+                children: [
+                  _DetailRow(
+                    icon: Icons.favorite_outline,
+                    label: 'Favori durumu',
+                    value: isFavorite ? 'Kaydedildi' : 'Kayitli degil',
+                    valueColor: isFavorite ? AppConstants.clay : null,
+                  ),
+                  _DetailRow(
+                    icon: Icons.bolt_outlined,
+                    label: 'Durum',
+                    value: widget.listing.status,
+                    valueColor: AppConstants.listingStatusColor(widget.listing.status),
+                  ),
+                  _DetailRow(
+                    icon: Icons.person_outline,
+                    label: 'Satici',
+                    value: widget.listing.sellerName.isEmpty
+                        ? 'Kullanici'
+                        : widget.listing.sellerName,
+                  ),
+                  _DetailRow(
+                    icon: Icons.park_outlined,
+                    label: 'Agac turu',
+                    value: widget.listing.woodType,
+                  ),
+                  _DetailRow(
+                    icon: Icons.water_drop_outlined,
+                    label: 'Nem durumu',
+                    value: widget.listing.moistureStatus,
+                  ),
+                  _DetailRow(
+                    icon: Icons.local_shipping_outlined,
+                    label: 'Nakliye',
+                    value: widget.listing.hasDelivery ? 'Var' : 'Yok',
+                  ),
+                  _DetailRow(
+                    icon: Icons.sell_outlined,
+                    label: 'Kategori',
+                    value: widget.listing.category,
+                  ),
+                  _DetailRow(
+                    icon: Icons.scale_outlined,
+                    label: 'Olcu',
+                    value:
+                        '${_formatNumber(widget.listing.amount)} ${widget.listing.unit}',
+                    isLast: true,
+                  ),
+                ],
               ),
-              _DetailRow(
-                icon: Icons.park_outlined,
-                label: 'Agac turu',
-                value: listing.woodType,
-              ),
-              _DetailRow(
-                icon: Icons.water_drop_outlined,
-                label: 'Nem durumu',
-                value: listing.moistureStatus,
-              ),
-              _DetailRow(
-                icon: Icons.local_shipping_outlined,
-                label: 'Nakliye',
-                value: listing.hasDelivery ? 'Var' : 'Yok',
-              ),
-              _DetailRow(
-                icon: Icons.sell_outlined,
-                label: 'Kategori',
-                value: listing.category,
-              ),
-              _DetailRow(
-                icon: Icons.scale_outlined,
-                label: 'Olcu',
-                value: '${_formatNumber(listing.amount)} ${listing.unit}',
-                isLast: true,
+              const SizedBox(height: 14),
+              _InfoPanel(
+                title: 'Aciklama',
+                subtitle: 'Saticinin urun icin ekledigi notlar.',
+                children: [
+                  Text(
+                    widget.listing.description,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppConstants.deepGreen,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          _InfoPanel(
-            title: 'Aciklama',
-            subtitle: 'Saticinin urun icin ekledigi notlar.',
-            children: [
-              Text(
-                listing.description,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppConstants.deepGreen,
-                  height: 1.45,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -195,10 +266,15 @@ class ListingDetailScreen extends StatelessWidget {
 }
 
 class _DetailHero extends StatelessWidget {
-  const _DetailHero({required this.listing, required this.isOwner});
+  const _DetailHero({
+    required this.listing,
+    required this.isOwner,
+    required this.isFavorite,
+  });
 
   final ListingModel listing;
   final bool isOwner;
+  final bool isFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -235,6 +311,12 @@ class _DetailHero extends StatelessWidget {
                 text: listing.status,
                 accentColor: statusColor,
               ),
+              if (isFavorite)
+                const _HeroChip(
+                  icon: Icons.favorite,
+                  text: 'Favorinde',
+                  accentColor: AppConstants.clay,
+                ),
               if (isOwner)
                 const _HeroChip(
                   icon: Icons.verified_user_outlined,

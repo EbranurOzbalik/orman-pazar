@@ -13,7 +13,7 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 | Platform | Flutter mobil uygulama |
 | Backend | Firebase / Cloud Firestore |
 | Kimlik dogrulama | Firebase Authentication |
-| Temel akis | Ilan ekleme, listeleme, detay, duzenleme, silme |
+| Temel akis | Ilan ekleme, listeleme, detay, duzenleme, silme, favorilere ekleme |
 | Tasarim | Orman temasina uygun modern pazar arayuzu |
 | Durum | MVP gelistirme asamasi |
 
@@ -27,6 +27,8 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 - Giris yapan kullanicinin ilan ekleyebilmesi
 - Kullanicinin kendi ilanlarini ayri ekranda yonetebilmesi
 - Sadece ilan sahibinin ilan duzenleyip silebilmesi
+- Ilan durumunu aktif, rezerve ve satildi olarak yonetebilme
+- Favorilere ekleme ve favori ilanlari ayri ekranda gorme
 - Firestore servis katmani uzerinden veri yonetimi
 - Profil, satici bilgisi ve temel kullanici altyapisi
 
@@ -99,6 +101,29 @@ Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir F
 - Ilan detayinda satici adi gosterilmeye baslandi.
 - Yeni ilan formu, profil telefon bilgisini otomatik dolduracak hale getirildi.
 
+### Gun 9 - Firebase baglantisini tamamlama
+
+- Gercek `firebase_options.dart` yapisi projeye baglandi.
+- `main.dart` icinde Firebase baslatma akisi resmi FlutterFire yapisina tasindi.
+- Uygulama acilisina Firebase yukleniyor ve hata durum ekranlari eklendi.
+- Auth ile Firestore kullanici dokumani senkronu guclendirildi.
+
+### Gun 10 - Ilan durum akisi
+
+- Ilan modeline durum alani eklendi.
+- `Aktif`, `Rezerve` ve `Satildi` durumlari tanimlandi.
+- Ana ekranda duruma gore filtreleme eklendi.
+- Ilan kartlari ve detay ekranina durum rozetleri eklendi.
+- Benim ilanlarim ekraninda durum bazli ozetler guclendirildi.
+
+### Gun 11 - Favoriler temeli
+
+- Kullanicilar icin favori ilan id'leri `users/{uid}` altinda tutulmaya baslandi.
+- Ana liste kartlarina kalp butonu eklendi.
+- Favorilerim ekrani eklendi.
+- Ilan detay ekranina favori ekleme ve cikarma aksiyonu baglandi.
+- Profil ekraninda favori sayisi gorunur hale getirildi.
+
 ## Teknik Yapi
 
 ```text
@@ -112,6 +137,7 @@ lib/
     add_listing_screen.dart
     edit_listing_screen.dart
     edit_profile_screen.dart
+    favorites_screen.dart
     home_screen.dart
     listing_detail_screen.dart
     login_screen.dart
@@ -167,8 +193,8 @@ flutter build apk --debug
 
 - Gercek cihaz veya emulator uzerinde kapsamli kullanici testi
 - Fotograf yukleme
-- Favorilere ekleme
-- Ilan durumu: aktif, satildi, pasif
+- Satici profiline diger ilanlarin baglanmasi
+- Fiyat araligi ve daha gelismis filtreleme
 - Daha gelismis profil yonetimi
 - Harita ve konum destegi
 - Production icin daha siki Firestore kurallari

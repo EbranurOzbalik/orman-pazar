@@ -89,6 +89,14 @@ class ProfileScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: _ProfileStatCard(
+                          icon: Icons.favorite_outline,
+                          label: 'Favori',
+                          value: profile.favoriteListingIds.length.toString(),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _ProfileStatCard(
                           icon: Icons.calendar_month_outlined,
                           label: 'Uyelik',
                           value: _formatDate(profile.createdAt),
@@ -140,8 +148,8 @@ class ProfileScreen extends StatelessWidget {
                             text: 'Firestore hazir',
                           ),
                           _StatusPillData(
-                            icon: Icons.construction_outlined,
-                            text: 'Profil duzenleme yakinda',
+                            icon: Icons.favorite_outline,
+                            text: 'Favoriler aktif',
                           ),
                         ],
                       ),

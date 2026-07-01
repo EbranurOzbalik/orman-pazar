@@ -1,139 +1,130 @@
 # Orman Pazar
 
-Orman urunleri icin Flutter ve Firebase tabanli mobil ilan uygulamasi.
+Orman Pazar, orman ürünleri için geliştirilen Flutter ve Firebase tabanlı bir mobil ilan uygulamasıdır.
 
-Orman Pazar; odun, kereste, tomruk, talas ve benzeri ormancilik urunleri icin gelistirilen nis bir pazar uygulamasidir. Saticilar ilan ekleyebilir, alicilar ilanlari listeleyip detaylarini inceleyebilir.
+Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan kişiler ile bu ürünleri arayan kullanıcıları daha düzenli bir ilan deneyiminde buluşturmaktır. Bu repo da projenin MVP sürecini adım adım kurduğumuz, okunabilir ve geliştirmeye açık Flutter kod tabanını içerir.
 
-Bu repo, uygulamanin MVP surecini gun gun ilerleten temiz ve ogrenilebilir bir Flutter projesi olarak hazirlandi.
+## Kısa Bakış
 
-## Proje Ozeti
-
-| Alan | Durum |
+| Başlık | Durum |
 | --- | --- |
 | Platform | Flutter mobil uygulama |
 | Backend | Firebase / Cloud Firestore |
-| Kimlik dogrulama | Firebase Authentication |
-| Temel akis | Ilan ekleme, listeleme, detay, duzenleme, silme, favorilere ekleme |
-| Tasarim | Orman temasina uygun modern pazar arayuzu |
-| Durum | MVP gelistirme asamasi |
+| Kimlik doğrulama | Firebase Authentication |
+| Temel akış | İlan ekleme, listeleme, detay, düzenleme, silme, favorilere ekleme |
+| Tasarım | Orman temasına uygun modern pazar arayüzü |
+| Aşama | MVP geliştirme süreci |
 
-## Mevcut Ozellikler
+## Şu Anda Neler Var?
 
-- Orman urunleri icin ilan listeleme
-- Ilan detayi goruntuleme
-- Kategoriye gore filtreleme
-- Baslik, aciklama, sehir, ilce ve agac turune gore arama
-- E-posta ve sifre ile kayit / giris
-- Giris yapan kullanicinin ilan ekleyebilmesi
-- Kullanicinin kendi ilanlarini ayri ekranda yonetebilmesi
-- Sadece ilan sahibinin ilan duzenleyip silebilmesi
-- Ilan durumunu aktif, rezerve ve satildi olarak yonetebilme
-- Favorilere ekleme ve favori ilanlari ayri ekranda gorme
-- Satici profili ve saticinin diger ilanlarini goruntuleme
-- Firestore servis katmani uzerinden veri yonetimi
-- Profil, satici bilgisi ve temel kullanici altyapisi
+- İlan listeleme ve detay görüntüleme
+- Kategori, durum ve metin tabanlı arama / filtreleme
+- E-posta ve şifre ile kayıt / giriş
+- Giriş yapan kullanıcının ilan eklemesi
+- Kendi ilanlarını düzenleme ve silme
+- İlan durumlarını `Aktif`, `Rezerve`, `Satıldı` olarak yönetme
+- Favorilere ekleme ve favori ilanları ayrı ekranda görme
+- Satıcı profiline gidip satıcının diğer ilanlarını inceleme
+- Profil bilgilerini düzenleme
+- Firestore servis katmanı üzerinden veri yönetimi
 
-## Gelisim Gunlugu
+## Gelişim Günlüğü
 
-### Gun 1 - MVP iskeleti
+### Gün 1 - MVP iskeleti
 
-- Flutter proje yapisi kuruldu.
-- `ListingModel` olusturuldu.
-- Firestore islemleri icin `ListingService` ayrildi.
-- Ana ekran, ilan ekleme ekrani, ilan detay ekrani ve ilan karti yapisi eklendi.
-- Firebase kodlari ekranlardan ayrilip servis katmaninda toplandi.
+- Flutter proje yapısı kuruldu.
+- `ListingModel` ve `ListingService` ayrıldı.
+- Ana ekran, ilan ekleme, ilan detay ve ilan kartı yapısı oluşturuldu.
+- Firebase kodları ekranlardan ayrılarak daha temiz bir yapı kuruldu.
 
-### Gun 2 - Firebase Android baglantisi
+### Gün 2 - Firebase Android bağlantısı
 
-- Android Firebase baglantisi hazirlandi.
+- Android Firebase bağlantısı hazırlandı.
 - `google-services.json` yerelde projeye eklendi.
-- Firestore ile ilan ekleme ve listeleme akisi kuruldu.
-- Gizli dosyalarin GitHub'a gitmemesi icin gerekli duzenlemeler yapildi.
+- Firestore ile temel ilan ekleme ve listeleme akışı kuruldu.
+- Gizli dosyaların GitHub'a gitmemesi için düzenleme yapıldı.
 
-### Gun 3 - Ilan kesfi
+### Gün 3 - İlan keşfi
 
-- Arama alani eklendi.
+- Arama alanı eklendi.
 - Kategori filtreleri eklendi.
-- Bos liste, yukleniyor ve hata durumlari iyilestirildi.
-- Ana ekran daha kullanisli hale getirildi.
+- Boş liste, yükleniyor ve hata durumları iyileştirildi.
+- Ana ekran daha kullanılır hale getirildi.
 
-### Gun 4 - Auth akisi
+### Gün 4 - Auth akışı
 
 - Firebase Auth servisi eklendi.
-- Giris ve kayit ekranlari olusturuldu.
-- Ilan eklemek icin giris kontrolu eklendi.
-- `sellerId` alani Firebase kullanicisinin `uid` degeriyle calismaya basladi.
+- Giriş ve kayıt ekranları hazırlandı.
+- İlan eklemek için giriş kontrolü eklendi.
+- `sellerId` alanı Firebase kullanıcısının `uid` değeriyle çalışmaya başladı.
 
-### Gun 5 - Kullanici ilan yonetimi
+### Gün 5 - Kullanıcı ilan yönetimi
 
-- Benim ilanlarim ekrani eklendi.
-- Ilan duzenleme ekrani eklendi.
-- Ilan silme akisi eklendi.
-- Sadece ilan sahibinin duzenleme ve silme islemi yapmasi saglandi.
-- Form dogrulamalari guclendirildi.
+- Benim ilanlarım ekranı eklendi.
+- İlan düzenleme ekranı eklendi.
+- İlan silme akışı eklendi.
+- Sadece ilan sahibinin düzenleme ve silme yapması sağlandı.
+- Form doğrulamaları güçlendirildi.
 
-### Gun 6 - Tasarim iyilestirmeleri
+### Gün 6 - Tasarım iyileştirmeleri
 
-- Ana ekran daha guclu bir pazar paneline donusturuldu.
-- Toplam ve gorunen ilan sayaclari eklendi.
+- Ana ekran daha güçlü bir pazar paneline dönüştürüldü.
+- Toplam ve görünen ilan sayaçları eklendi.
 - Kategori filtreleri ikonlarla desteklendi.
-- Ilan kartlari kategoriye gore renk ve ikon alacak sekilde yenilendi.
-- Detay ekraninda fiyat ve miktar daha belirgin hale getirildi.
-- Giris ve kayit ekranlari marka paneli ve form karti duzenine tasindi.
+- İlan kartları kategoriye göre yenilendi.
+- Detay ekranında fiyat ve miktar daha belirgin hale getirildi.
+- Giriş ve kayıt ekranları daha düzenli bir yapıya taşındı.
 
-### Gun 7 - Firebase entegrasyon testleri
+### Gün 7 - Firebase entegrasyon testleri
 
-- Firestore kurallari canli Firebase projesinde uygulandi.
+- Firestore kuralları canlı Firebase projesinde uygulandı.
 - Email/Password Authentication aktif edildi.
-- Test kullanicisi olusturuldu.
-- Kayit olan kullanicilarin `users/{uid}` dokumaninda tutulmasi eklendi.
-- Firestore'a manuel test ilanlari eklendi.
-- Uygulamada Auth ve Firestore ile ilan listeleme test edildi.
-- Arama alani sehir ve ilce dahil tek kutuda calisacak sekilde sadelestirildi.
-- Ana ekran ust paneli daha kompakt hale getirildi.
-- Uygulamadan kayit olma ve ilan ekleme akisi test edildi.
+- Test kullanıcısı oluşturuldu.
+- `users/{uid}` dokümanı tutulmaya başlandı.
+- Firestore'a manuel test ilanları eklendi.
+- Uygulamada Auth ve Firestore akışları test edildi.
 
-### Gun 8 - Profil ve satici bilgisi
+### Gün 8 - Profil ve satıcı bilgisi
 
-- Kayit formuna ad soyad ve telefon alanlari eklendi.
-- Kullanici profili `name + email + phone + createdAt` ile genisletildi.
-- Profil ekrani ve profil duzenleme ekrani eklendi.
-- Benim ilanlarim ekranina kullanici ozeti baglandi.
-- Ilan detayinda satici adi gosterilmeye baslandi.
-- Yeni ilan formu, profil telefon bilgisini otomatik dolduracak hale getirildi.
+- Kayıt formuna ad soyad ve telefon alanları eklendi.
+- Kullanıcı profili `name + email + phone + createdAt` ile genişletildi.
+- Profil ekranı ve profil düzenleme ekranı eklendi.
+- Benim ilanlarım ekranına kullanıcı özeti bağlandı.
+- İlan detayında satıcı adı gösterilmeye başlandı.
+- Yeni ilan formu profil telefonunu otomatik dolduracak hale geldi.
 
-### Gun 9 - Firebase baglantisini tamamlama
+### Gün 9 - Firebase bağlantısını tamamlama
 
-- Gercek `firebase_options.dart` yapisi projeye baglandi.
-- `main.dart` icinde Firebase baslatma akisi resmi FlutterFire yapisina tasindi.
-- Uygulama acilisina Firebase yukleniyor ve hata durum ekranlari eklendi.
-- Auth ile Firestore kullanici dokumani senkronu guclendirildi.
+- Gerçek `firebase_options.dart` yapısı projeye bağlandı.
+- `main.dart` içinde Firebase başlatma akışı resmi FlutterFire yapısına taşındı.
+- Uygulama açılışına yükleniyor ve hata durum ekranları eklendi.
+- Auth ile Firestore kullanıcı dokümanı senkronu güçlendirildi.
 
-### Gun 10 - Ilan durum akisi
+### Gün 10 - İlan durum akışı
 
-- Ilan modeline durum alani eklendi.
-- `Aktif`, `Rezerve` ve `Satildi` durumlari tanimlandi.
-- Ana ekranda duruma gore filtreleme eklendi.
-- Ilan kartlari ve detay ekranina durum rozetleri eklendi.
-- Benim ilanlarim ekraninda durum bazli ozetler guclendirildi.
+- İlan modeline durum alanı eklendi.
+- `Aktif`, `Rezerve` ve `Satıldı` durumları tanımlandı.
+- Ana ekranda duruma göre filtreleme eklendi.
+- İlan kartları ve detay ekranına durum rozetleri eklendi.
+- Benim ilanlarım ekranında durum özeti güçlendirildi.
 
-### Gun 11 - Favoriler temeli
+### Gün 11 - Favoriler
 
-- Kullanicilar icin favori ilan id'leri `users/{uid}` altinda tutulmaya baslandi.
-- Ana liste kartlarina kalp butonu eklendi.
-- Favorilerim ekrani eklendi.
-- Ilan detay ekranina favori ekleme ve cikarma aksiyonu baglandi.
-- Profil ekraninda favori sayisi gorunur hale getirildi.
+- Kullanıcı bazlı favori ilan id'leri `users/{uid}` altında tutulmaya başlandı.
+- Ana liste kartlarına kalp butonu eklendi.
+- Favorilerim ekranı eklendi.
+- İlan detay ekranına favori ekleme ve çıkarma akışı bağlandı.
+- Profil ekranında favori sayısı görünür hale geldi.
 
-### Gun 12 - Satici profili akisi
+### Gün 12 - Satıcı profili
 
-- Ilan detayindan satici bilgisi tiklanabilir hale getirildi.
+- İlan detayından satıcı bilgisi tıklanabilir hale getirildi.
 - `SellerProfileScreen` eklendi.
-- Saticinin telefon, toplam ilan, aktif ilan ve satilan ilan ozeti gosterilmeye baslandi.
-- Saticinin diger ilanlari tek ekranda listelendi.
-- Satici profilinden ilan detayina geri akisi baglandi.
+- Satıcının telefon, toplam ilan, aktif ilan ve satılan ilan özeti gösterilmeye başlandı.
+- Satıcının diğer ilanları tek ekranda listelendi.
+- Satıcı profilinden ilan detayına geri akış bağlandı.
 
-## Teknik Yapi
+## Proje Yapısı
 
 ```text
 lib/
@@ -163,7 +154,7 @@ lib/
   main.dart
 ```
 
-## Kullanilan Teknolojiler
+## Kullandığımız Teknolojiler
 
 - Flutter
 - Dart
@@ -171,18 +162,18 @@ lib/
 - Cloud Firestore
 - Firebase Authentication
 
-## Calistirma
+## Çalıştırma
 
-Projeyi calistirmadan once Flutter kurulumu tamamlanmis olmalidir.
+Projeyi çalıştırmadan önce Flutter kurulumu hazır olmalı.
 
 ```bash
 flutter pub get
 flutter run
 ```
 
-Firebase ile calistirmak icin kendi Firebase projenizi Android uygulamasi olarak ekleyip `google-services.json` dosyasini `android/app/` klasorune yerlestirin. Bu dosya repoya dahil edilmez.
+Firebase ile çalıştırmak için kendi Firebase projenizi Android uygulaması olarak ekleyip `google-services.json` dosyasını `android/app/` klasörüne koymanız gerekir. Bu dosya repoya dahil edilmez.
 
-Kayit olan kullanicilari Firestore'da tutmak icin rules tarafinda `users` koleksiyonu icin su izinler bulunmalidir:
+`users` koleksiyonu için temel Firestore rule örneği:
 
 ```js
 match /users/{userId} {
@@ -191,7 +182,7 @@ match /users/{userId} {
 }
 ```
 
-Kontrol komutlari:
+Kontrol komutları:
 
 ```bash
 flutter analyze
@@ -199,12 +190,11 @@ flutter test
 flutter build apk --debug
 ```
 
-## Siradaki Adimlar
+## Sonraki Adımlar
 
-- Gercek cihaz veya emulator uzerinde kapsamli kullanici testi
-- Fotograf yukleme
-- Satici profiline diger ilanlarin baglanmasi
-- Fiyat araligi ve daha gelismis filtreleme
-- Daha gelismis profil yonetimi
-- Harita ve konum destegi
-- Production icin daha siki Firestore kurallari
+- Gerçek cihaz veya emülatör üzerinde daha kapsamlı test
+- Fotoğraf yükleme
+- Fiyat aralığı ve daha gelişmiş filtreleme
+- Daha gelişmiş profil yönetimi
+- Harita ve konum desteği
+- Production için daha sıkı Firestore kuralları

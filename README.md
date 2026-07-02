@@ -124,6 +124,14 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - Satıcının diğer ilanları tek ekranda listelendi.
 - Satıcı profilinden ilan detayına geri akış bağlandı.
 
+### Gün 13 - İlan görselleri
+
+- İlan modeline çoklu görsel desteği eklendi.
+- İlan kartlarına kapak görseli, detay ekranına yatay galeri alanı eklendi.
+- İlan ekleme ve düzenleme formlarına görsel URL alanları eklendi.
+- Cihazdan galeri veya kamera ile görsel seçme akışı bağlandı.
+- Seçilen görseller Firebase Storage'a yüklenip ilan kaydına URL olarak eklenmeye başlandı.
+
 ## Proje Yapısı
 
 ```text
@@ -161,6 +169,8 @@ lib/
 - Firebase Core
 - Cloud Firestore
 - Firebase Authentication
+- Firebase Storage
+- Image Picker
 
 ## Çalıştırma
 
@@ -193,7 +203,6 @@ flutter build apk --debug
 ## Sonraki Adımlar
 
 - Gerçek cihaz veya emülatör üzerinde daha kapsamlı test
-- Fotoğraf yükleme
 - Fiyat aralığı ve daha gelişmiş filtreleme
 - Daha gelişmiş profil yönetimi
 - Harita ve konum desteği

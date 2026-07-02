@@ -7,6 +7,7 @@ class ListingModel {
     required this.id,
     required this.title,
     required this.description,
+    this.imageUrls = const [],
     required this.category,
     required this.woodType,
     required this.amount,
@@ -26,6 +27,7 @@ class ListingModel {
   final String id;
   final String title;
   final String description;
+  final List<String> imageUrls;
   final String category;
   final String woodType;
   final double amount;
@@ -45,6 +47,7 @@ class ListingModel {
     String? id,
     String? title,
     String? description,
+    List<String>? imageUrls,
     String? category,
     String? woodType,
     double? amount,
@@ -64,6 +67,7 @@ class ListingModel {
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
+      imageUrls: imageUrls ?? this.imageUrls,
       category: category ?? this.category,
       woodType: woodType ?? this.woodType,
       amount: amount ?? this.amount,
@@ -85,6 +89,7 @@ class ListingModel {
     return {
       'title': title,
       'description': description,
+      'imageUrls': imageUrls,
       'category': category,
       'woodType': woodType,
       'amount': amount,
@@ -107,6 +112,7 @@ class ListingModel {
       id: id,
       title: map['title'] as String? ?? '',
       description: map['description'] as String? ?? '',
+      imageUrls: _toStringList(map['imageUrls']),
       category: _normalizeCategory(map['category'] as String?),
       woodType: _normalizeWoodType(map['woodType'] as String?),
       amount: _toDouble(map['amount']),
@@ -114,7 +120,9 @@ class ListingModel {
       price: _toDouble(map['price']),
       city: map['city'] as String? ?? '',
       district: map['district'] as String? ?? '',
-      moistureStatus: _normalizeMoistureStatus(map['moistureStatus'] as String?),
+      moistureStatus: _normalizeMoistureStatus(
+        map['moistureStatus'] as String?,
+      ),
       hasDelivery: map['hasDelivery'] as bool? ?? false,
       phone: map['phone'] as String? ?? '',
       sellerId: map['sellerId'] as String? ?? '',
@@ -219,6 +227,17 @@ class ListingModel {
       return double.tryParse(value.replaceAll(',', '.')) ?? 0;
     }
     return 0;
+  }
+
+  static List<String> _toStringList(dynamic value) {
+    if (value is List) {
+      return value
+          .whereType<String>()
+          .map((item) => item.trim())
+          .where((item) => item.isNotEmpty)
+          .toList();
+    }
+    return const [];
   }
 
   static DateTime _toDateTime(dynamic value) {

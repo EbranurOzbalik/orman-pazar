@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../constants/app_constants.dart';
 import '../models/app_user_model.dart';
 import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
+import '../services/storage_service.dart';
 import '../services/user_service.dart';
 
 class AddListingScreen extends StatefulWidget {
@@ -18,6 +20,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _imageUrl1Controller = TextEditingController();
+  final _imageUrl2Controller = TextEditingController();
+  final _imageUrl3Controller = TextEditingController();
   final _amountController = TextEditingController();
   final _priceController = TextEditingController();
   final _cityController = TextEditingController();
@@ -27,12 +32,15 @@ class _AddListingScreenState extends State<AddListingScreen> {
   final ListingService _listingService = ListingService();
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
+  final StorageService _storageService = StorageService();
+  final ImagePicker _imagePicker = ImagePicker();
 
   String _category = AppConstants.categories.first;
   String _woodType = AppConstants.woodTypes.first;
   String _unit = AppConstants.units.first;
   String _moistureStatus = AppConstants.moistureStatuses.first;
   String _status = AppConstants.activeStatus;
+  final List<XFile> _pickedImages = [];
   bool _hasDelivery = false;
   bool _isSaving = false;
   bool _isPrefillingProfile = true;
@@ -47,6 +55,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
   void dispose() {
     _titleController.dispose();
     _descriptionController.dispose();
+    _imageUrl1Controller.dispose();
+    _imageUrl2Controller.dispose();
+    _imageUrl3Controller.dispose();
     _amountController.dispose();
     _priceController.dispose();
     _cityController.dispose();
@@ -94,33 +105,35 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
     setState(() => _isSaving = true);
 
-    final profile = await _userService.getUserById(user.uid);
-    final sellerName = _resolveSellerName(
-      userEmail: user.email,
-      profile: profile,
-    );
-
-    final listing = ListingModel(
-      id: '',
-      title: _titleController.text.trim(),
-      description: _descriptionController.text.trim(),
-      category: _category,
-      woodType: _woodType,
-      amount: _parseNumber(_amountController.text),
-      unit: _unit,
-      price: _parseNumber(_priceController.text),
-      city: _cityController.text.trim(),
-      district: _districtController.text.trim(),
-      moistureStatus: _moistureStatus,
-      hasDelivery: _hasDelivery,
-      phone: _phoneController.text.trim(),
-      sellerId: user.uid,
-      sellerName: sellerName,
-      status: _status,
-      createdAt: DateTime.now(),
-    );
-
     try {
+      final profile = await _userService.getUserById(user.uid);
+      final sellerName = _resolveSellerName(
+        userEmail: user.email,
+        profile: profile,
+      );
+      final imageUrls = await _buildImageUrls(sellerId: user.uid);
+
+      final listing = ListingModel(
+        id: '',
+        title: _titleController.text.trim(),
+        description: _descriptionController.text.trim(),
+        imageUrls: imageUrls,
+        category: _category,
+        woodType: _woodType,
+        amount: _parseNumber(_amountController.text),
+        unit: _unit,
+        price: _parseNumber(_priceController.text),
+        city: _cityController.text.trim(),
+        district: _districtController.text.trim(),
+        moistureStatus: _moistureStatus,
+        hasDelivery: _hasDelivery,
+        phone: _phoneController.text.trim(),
+        sellerId: user.uid,
+        sellerName: sellerName,
+        status: _status,
+        createdAt: DateTime.now(),
+      );
+
       await _listingService.addListing(listing);
 
       if (!mounted) {
@@ -164,6 +177,89 @@ class _AddListingScreenState extends State<AddListingScreen> {
     }
 
     return 'Kullanici';
+  }
+
+  List<String> _collectImageUrls() {
+    return [
+      _imageUrl1Controller.text.trim(),
+      _imageUrl2Controller.text.trim(),
+      _imageUrl3Controller.text.trim(),
+    ].where((item) => item.isNotEmpty).toList();
+  }
+
+  int get _remainingImageSlots {
+    return 3 - _collectImageUrls().length - _pickedImages.length;
+  }
+
+  Future<void> _pickFromGallery() async {
+    if (_remainingImageSlots <= 0) {
+      _showImageLimitMessage();
+      return;
+    }
+
+    final pickedFiles = await _imagePicker.pickMultiImage(imageQuality: 82);
+    if (pickedFiles.isEmpty || !mounted) {
+      return;
+    }
+
+    final allowedFiles = pickedFiles.take(_remainingImageSlots).toList();
+
+    setState(() {
+      _pickedImages.addAll(allowedFiles);
+    });
+
+    if (pickedFiles.length > allowedFiles.length) {
+      _showImageLimitMessage();
+    }
+  }
+
+  Future<void> _pickFromCamera() async {
+    if (_remainingImageSlots <= 0) {
+      _showImageLimitMessage();
+      return;
+    }
+
+    final pickedFile = await _imagePicker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 82,
+    );
+
+    if (pickedFile == null || !mounted) {
+      return;
+    }
+
+    setState(() {
+      _pickedImages.add(pickedFile);
+    });
+  }
+
+  Future<List<String>> _buildImageUrls({required String sellerId}) async {
+    final manualUrls = _collectImageUrls();
+    if (_pickedImages.isEmpty) {
+      return manualUrls;
+    }
+
+    final uploadableFiles = _pickedImages.take(3 - manualUrls.length).toList();
+    final uploadedUrls = await _storageService.uploadListingImages(
+      sellerId: sellerId,
+      files: uploadableFiles,
+    );
+
+    return [...manualUrls, ...uploadedUrls];
+  }
+
+  void _removePickedImage(int index) {
+    setState(() {
+      _pickedImages.removeAt(index);
+    });
+  }
+
+  void _showImageLimitMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Bir ilan icin en fazla 3 gorsel eklenebilir'),
+      ),
+    );
   }
 
   String? _requiredValidator(String? value) {
@@ -272,6 +368,45 @@ class _AddListingScreenState extends State<AddListingScreen> {
                     validator: _descriptionValidator,
                   ),
                   const SizedBox(height: 12),
+                  _ImageInputsPreview(
+                    imageUrls: _collectImageUrls(),
+                    pickedImages: _pickedImages,
+                    onPickFromGallery: _pickFromGallery,
+                    onPickFromCamera: _pickFromCamera,
+                    onRemovePickedImage: _removePickedImage,
+                    children: [
+                      TextFormField(
+                        controller: _imageUrl1Controller,
+                        decoration: const InputDecoration(
+                          labelText: 'Gorsel URL 1',
+                          hintText: 'https://...',
+                          prefixIcon: Icon(Icons.image_outlined),
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _imageUrl2Controller,
+                        decoration: const InputDecoration(
+                          labelText: 'Gorsel URL 2',
+                          hintText: 'https://...',
+                          prefixIcon: Icon(Icons.image_outlined),
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: _imageUrl3Controller,
+                        decoration: const InputDecoration(
+                          labelText: 'Gorsel URL 3',
+                          hintText: 'https://...',
+                          prefixIcon: Icon(Icons.image_outlined),
+                        ),
+                        onChanged: (_) => setState(() {}),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   _DropdownField(
                     label: 'Kategori',
                     value: _category,
@@ -293,7 +428,9 @@ class _AddListingScreenState extends State<AddListingScreen> {
                         child: TextFormField(
                           controller: _amountController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'Miktar'),
+                          decoration: const InputDecoration(
+                            labelText: 'Miktar',
+                          ),
                           validator: _numberValidator,
                         ),
                       ),
@@ -413,6 +550,183 @@ class _FormPanel extends StatelessWidget {
           ...children,
         ],
       ),
+    );
+  }
+}
+
+class _ImageInputsPreview extends StatelessWidget {
+  const _ImageInputsPreview({
+    required this.imageUrls,
+    required this.pickedImages,
+    required this.onPickFromGallery,
+    required this.onPickFromCamera,
+    required this.onRemovePickedImage,
+    required this.children,
+  });
+
+  final List<String> imageUrls;
+  final List<XFile> pickedImages;
+  final Future<void> Function() onPickFromGallery;
+  final Future<void> Function() onPickFromCamera;
+  final ValueChanged<int> onRemovePickedImage;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onPickFromGallery,
+                icon: const Icon(Icons.photo_library_outlined),
+                label: const Text('Galeriden sec'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onPickFromCamera,
+                icon: const Icon(Icons.photo_camera_outlined),
+                label: const Text('Kamera'),
+              ),
+            ),
+          ],
+        ),
+        if (pickedImages.isNotEmpty) ...[
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 86,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: pickedImages.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (context, index) {
+                return _PickedImageTile(
+                  file: pickedImages[index],
+                  onRemove: () => onRemovePickedImage(index),
+                );
+              },
+            ),
+          ),
+        ],
+        const SizedBox(height: 12),
+        ...children,
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppConstants.cream,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppConstants.border),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: AppConstants.mossGreen,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.image_outlined,
+                  color: AppConstants.forestGreen,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Gorsel alani hazir',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppConstants.deepGreen,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      imageUrls.isEmpty && pickedImages.isEmpty
+                          ? 'Su an gorsel eklenmedi. Galeri, kamera veya URL ile ekleyebilirsin.'
+                          : '${imageUrls.length + pickedImages.length} gorsel kayit icin hazir.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppConstants.mutedText,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _PickedImageTile extends StatelessWidget {
+  const _PickedImageTile({required this.file, required this.onRemove});
+
+  final XFile file;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Container(
+          width: 92,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppConstants.border),
+            color: Colors.white,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: FutureBuilder(
+            future: file.readAsBytes(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                );
+              }
+
+              if (!snapshot.hasData) {
+                return const Center(child: Icon(Icons.broken_image_outlined));
+              }
+
+              return Image.memory(
+                snapshot.data!,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              );
+            },
+          ),
+        ),
+        Positioned(
+          top: 4,
+          right: 4,
+          child: Material(
+            color: Colors.black54,
+            borderRadius: BorderRadius.circular(999),
+            child: InkWell(
+              onTap: onRemove,
+              borderRadius: BorderRadius.circular(999),
+              child: const Padding(
+                padding: EdgeInsets.all(4),
+                child: Icon(Icons.close, size: 14, color: Colors.white),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

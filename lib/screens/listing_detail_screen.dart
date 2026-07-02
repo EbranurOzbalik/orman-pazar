@@ -25,7 +25,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
 
   Future<void> _openEditScreen(BuildContext context) async {
     final wasUpdated = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => EditListingScreen(listing: widget.listing)),
+      MaterialPageRoute(
+        builder: (_) => EditListingScreen(listing: widget.listing),
+      ),
     );
 
     if (wasUpdated == true && context.mounted) {
@@ -93,9 +95,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     }
   }
 
-  Future<void> _toggleFavorite({
-    required bool isFavorite,
-  }) async {
+  Future<void> _toggleFavorite({required bool isFavorite}) async {
     final user = _authService.currentUser;
     if (user == null) {
       if (!mounted) {
@@ -121,7 +121,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          nextValue ? 'Ilan favorilere eklendi' : 'Ilan favorilerden cikartildi',
+          nextValue
+              ? 'Ilan favorilere eklendi'
+              : 'Ilan favorilerden cikartildi',
         ),
       ),
     );
@@ -147,9 +149,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               IconButton(
                 tooltip: isFavorite ? 'Favoriden cikar' : 'Favorilere ekle',
                 onPressed: () => _toggleFavorite(isFavorite: isFavorite),
-                icon: Icon(
-                  isFavorite ? Icons.favorite : Icons.favorite_border,
-                ),
+                icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
               ),
               if (isOwner)
                 PopupMenuButton<String>(
@@ -189,6 +189,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
             children: [
+              _ImageGalleryPanel(imageUrls: widget.listing.imageUrls),
+              const SizedBox(height: 14),
               _DetailHero(
                 listing: widget.listing,
                 isOwner: isOwner,
@@ -214,7 +216,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                     icon: Icons.bolt_outlined,
                     label: 'Durum',
                     value: widget.listing.status,
-                    valueColor: AppConstants.listingStatusColor(widget.listing.status),
+                    valueColor: AppConstants.listingStatusColor(
+                      widget.listing.status,
+                    ),
                   ),
                   _DetailRow(
                     icon: Icons.person_outline,
@@ -279,6 +283,97 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
       return value.toStringAsFixed(0);
     }
     return value.toStringAsFixed(2);
+  }
+}
+
+class _ImageGalleryPanel extends StatelessWidget {
+  const _ImageGalleryPanel({required this.imageUrls});
+
+  final List<String> imageUrls;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageUrls.isEmpty) {
+      return Container(
+        height: 220,
+        decoration: BoxDecoration(
+          color: AppConstants.mossGreen,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: AppConstants.border),
+        ),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_outlined,
+              color: AppConstants.forestGreen,
+              size: 42,
+            ),
+            SizedBox(height: 10),
+            Text(
+              'Bu ilan icin henuz gorsel eklenmedi',
+              style: TextStyle(
+                color: AppConstants.deepGreen,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 220,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: imageUrls.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 12),
+        itemBuilder: (context, index) {
+          final imageUrl = imageUrls[index];
+
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              width: MediaQuery.of(context).size.width - 32,
+              color: AppConstants.mossGreen,
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) {
+                  return const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.broken_image_outlined,
+                          color: AppConstants.forestGreen,
+                          size: 42,
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'Gorsel yuklenemedi',
+                          style: TextStyle(
+                            color: AppConstants.deepGreen,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                loadingBuilder: (context, child, progress) {
+                  if (progress == null) {
+                    return child;
+                  }
+
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 }
 
@@ -729,10 +824,7 @@ class _DetailRow extends StatelessWidget {
               ),
               if (onTap != null) ...[
                 const SizedBox(width: 8),
-                const Icon(
-                  Icons.chevron_right,
-                  color: AppConstants.mutedText,
-                ),
+                const Icon(Icons.chevron_right, color: AppConstants.mutedText),
               ],
             ],
           ),

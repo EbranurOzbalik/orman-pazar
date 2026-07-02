@@ -47,6 +47,11 @@ class ListingCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                _ListingCoverImage(
+                  imageUrl: listing.imageUrls.isEmpty
+                      ? null
+                      : listing.imageUrls.first,
+                ),
                 Container(height: 5, color: categoryColor),
                 Padding(
                   padding: const EdgeInsets.all(14),
@@ -141,7 +146,10 @@ class ListingCard extends StatelessWidget {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          _InfoChip(text: listing.category, color: categoryColor),
+                          _InfoChip(
+                            text: listing.category,
+                            color: categoryColor,
+                          ),
                           _InfoChip(text: listing.woodType),
                           _InfoChip(text: listing.moistureStatus),
                           if (listing.hasDelivery)
@@ -239,6 +247,84 @@ class ListingCard extends StatelessWidget {
       default:
         return AppConstants.leafGreen;
     }
+  }
+}
+
+class _ListingCoverImage extends StatelessWidget {
+  const _ListingCoverImage({required this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    if (imageUrl == null || imageUrl!.isEmpty) {
+      return Container(
+        height: 148,
+        width: double.infinity,
+        color: AppConstants.mossGreen,
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_outlined,
+              color: AppConstants.forestGreen,
+              size: 34,
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Gorsel eklendiginde burada gorunecek',
+              style: TextStyle(
+                color: AppConstants.deepGreen,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 148,
+      width: double.infinity,
+      child: Image.network(
+        imageUrl!,
+        fit: BoxFit.cover,
+        errorBuilder: (_, _, _) {
+          return Container(
+            color: AppConstants.mossGreen,
+            child: const Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.broken_image_outlined,
+                  color: AppConstants.forestGreen,
+                  size: 34,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Gorsel yuklenemedi',
+                  style: TextStyle(
+                    color: AppConstants.deepGreen,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+        loadingBuilder: (context, child, progress) {
+          if (progress == null) {
+            return child;
+          }
+
+          return Container(
+            color: AppConstants.mossGreen,
+            alignment: Alignment.center,
+            child: const CircularProgressIndicator(),
+          );
+        },
+      ),
+    );
   }
 }
 

@@ -51,6 +51,8 @@ class ListingCard extends StatelessWidget {
                   imageUrl: listing.imageUrls.isEmpty
                       ? null
                       : listing.imageUrls.first,
+                  imageCount: listing.imageUrls.length,
+                  statusText: listing.status,
                 ),
                 Container(height: 5, color: categoryColor),
                 Padding(
@@ -251,9 +253,15 @@ class ListingCard extends StatelessWidget {
 }
 
 class _ListingCoverImage extends StatelessWidget {
-  const _ListingCoverImage({required this.imageUrl});
+  const _ListingCoverImage({
+    required this.imageUrl,
+    required this.imageCount,
+    required this.statusText,
+  });
 
   final String? imageUrl;
+  final int imageCount;
+  final String statusText;
 
   @override
   Widget build(BuildContext context) {
@@ -286,43 +294,112 @@ class _ListingCoverImage extends StatelessWidget {
     return SizedBox(
       height: 148,
       width: double.infinity,
-      child: Image.network(
-        imageUrl!,
-        fit: BoxFit.cover,
-        errorBuilder: (_, _, _) {
-          return Container(
-            color: AppConstants.mossGreen,
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.broken_image_outlined,
-                  color: AppConstants.forestGreen,
-                  size: 34,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.network(
+            imageUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) {
+              return Container(
+                color: AppConstants.mossGreen,
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.broken_image_outlined,
+                      color: AppConstants.forestGreen,
+                      size: 34,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Gorsel yuklenemedi',
+                      style: TextStyle(
+                        color: AppConstants.deepGreen,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Gorsel yuklenemedi',
-                  style: TextStyle(
-                    color: AppConstants.deepGreen,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-        loadingBuilder: (context, child, progress) {
-          if (progress == null) {
-            return child;
-          }
+              );
+            },
+            loadingBuilder: (context, child, progress) {
+              if (progress == null) {
+                return child;
+              }
 
-          return Container(
-            color: AppConstants.mossGreen,
-            alignment: Alignment.center,
-            child: const CircularProgressIndicator(),
-          );
-        },
+              return Container(
+                color: AppConstants.mossGreen,
+                alignment: Alignment.center,
+                child: const CircularProgressIndicator(),
+              );
+            },
+          ),
+          DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.06),
+                  Colors.black.withValues(alpha: 0.0),
+                  Colors.black.withValues(alpha: 0.34),
+                ],
+              ),
+            ),
+          ),
+          if (imageCount > 1)
+            Positioned(
+              right: 10,
+              bottom: 10,
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.photo_library_outlined,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      '$imageCount gorsel',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          Positioned(
+            left: 10,
+            top: 10,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.45),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                statusText,
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

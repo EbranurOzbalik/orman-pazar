@@ -6,6 +6,7 @@ import '../services/auth_service.dart';
 import '../services/listing_service.dart';
 import '../services/user_service.dart';
 import 'edit_listing_screen.dart';
+import 'image_gallery_screen.dart';
 import 'login_screen.dart';
 import 'seller_profile_screen.dart';
 
@@ -189,7 +190,20 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
           body: ListView(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
             children: [
-              _ImageGalleryPanel(imageUrls: widget.listing.imageUrls),
+              _ImageGalleryPanel(
+                imageUrls: widget.listing.imageUrls,
+                onOpenImage: (index) {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => ImageGalleryScreen(
+                        imageUrls: widget.listing.imageUrls,
+                        initialIndex: index,
+                        title: widget.listing.title,
+                      ),
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 14),
               _DetailHero(
                 listing: widget.listing,
@@ -286,14 +300,38 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
   }
 }
 
-class _ImageGalleryPanel extends StatelessWidget {
-  const _ImageGalleryPanel({required this.imageUrls});
+class _ImageGalleryPanel extends StatefulWidget {
+  const _ImageGalleryPanel({
+    required this.imageUrls,
+    required this.onOpenImage,
+  });
 
   final List<String> imageUrls;
+  final ValueChanged<int> onOpenImage;
+
+  @override
+  State<_ImageGalleryPanel> createState() => _ImageGalleryPanelState();
+}
+
+class _ImageGalleryPanelState extends State<_ImageGalleryPanel> {
+  late final PageController _pageController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (imageUrls.isEmpty) {
+    if (widget.imageUrls.isEmpty) {
       return Container(
         height: 220,
         decoration: BoxDecoration(
@@ -322,57 +360,175 @@ class _ImageGalleryPanel extends StatelessWidget {
       );
     }
 
-    return SizedBox(
-      height: 220,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: imageUrls.length,
-        separatorBuilder: (_, _) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final imageUrl = imageUrls[index];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: SizedBox(
+            height: 240,
+            child: Stack(
+              children: [
+                PageView.builder(
+                  controller: _pageController,
+                  itemCount: widget.imageUrls.length,
+                  onPageChanged: (index) {
+                    setState(() => _currentIndex = index);
+                  },
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () => widget.onOpenImage(index),
+                      child: Container(
+                        color: AppConstants.mossGreen,
+                        child: Image.network(
+                          widget.imageUrls[index],
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, _, _) {
+                            return const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.broken_image_outlined,
+                                    color: AppConstants.forestGreen,
+                                    size: 42,
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text(
+                                    'Gorsel yuklenemedi',
+                                    style: TextStyle(
+                                      color: AppConstants.deepGreen,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) {
+                              return child;
+                            }
 
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              width: MediaQuery.of(context).size.width - 32,
-              color: AppConstants.mossGreen,
-              child: Image.network(
-                imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) {
-                  return const Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.broken_image_outlined,
-                          color: AppConstants.forestGreen,
-                          size: 42,
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          },
                         ),
-                        SizedBox(height: 10),
+                      ),
+                    );
+                  },
+                ),
+                Positioned(
+                  top: 12,
+                  left: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Text(
+                      '${_currentIndex + 1} / ${widget.imageUrls.length}',
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  right: 12,
+                  bottom: 12,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.open_in_full,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 6),
                         Text(
-                          'Gorsel yuklenemedi',
-                          style: TextStyle(
-                            color: AppConstants.deepGreen,
-                            fontWeight: FontWeight.w700,
-                          ),
+                          'Tam ekran',
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
                         ),
                       ],
                     ),
-                  );
-                },
-                loadingBuilder: (context, child, progress) {
-                  if (progress == null) {
-                    return child;
-                  }
-
-                  return const Center(child: CircularProgressIndicator());
-                },
-              ),
+                  ),
+                ),
+              ],
             ),
-          );
-        },
-      ),
+          ),
+        ),
+        if (widget.imageUrls.length > 1) ...[
+          const SizedBox(height: 10),
+          SizedBox(
+            height: 70,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: widget.imageUrls.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 10),
+              itemBuilder: (context, index) {
+                final isActive = index == _currentIndex;
+
+                return GestureDetector(
+                  onTap: () {
+                    _pageController.animateToPage(
+                      index,
+                      duration: const Duration(milliseconds: 220),
+                      curve: Curves.easeOut,
+                    );
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    width: 86,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isActive
+                            ? AppConstants.forestGreen
+                            : AppConstants.border,
+                        width: isActive ? 2 : 1,
+                      ),
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    child: Image.network(
+                      widget.imageUrls[index],
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) {
+                        return Container(
+                          color: AppConstants.mossGreen,
+                          child: const Icon(
+                            Icons.broken_image_outlined,
+                            color: AppConstants.forestGreen,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -132,6 +132,13 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - Cihazdan galeri veya kamera ile görsel seçme akışı bağlandı.
 - Seçilen görseller Firebase Storage'a yüklenip ilan kaydına URL olarak eklenmeye başlandı.
 
+### Gün 14 - Görsel deneyimi
+
+- İlan detay ekranındaki galeri kaydırılabilir hale getirildi.
+- Görsellere dokununca tam ekran galeri açılmaya başlandı.
+- Tam ekran galeride yakınlaştırma ve küçük önizleme şeridi eklendi.
+- İlan kartlarında çoklu görsel sayısı daha görünür hale getirildi.
+
 ## Proje Yapısı
 
 ```text
@@ -147,6 +154,7 @@ lib/
     edit_profile_screen.dart
     favorites_screen.dart
     home_screen.dart
+    image_gallery_screen.dart
     listing_detail_screen.dart
     login_screen.dart
     my_listings_screen.dart

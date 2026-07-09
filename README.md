@@ -147,6 +147,14 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - Aktif filtre sayısı görünür hale getirildi.
 - Gelişmiş filtreleri tek dokunuşla temizleme akışı eklendi.
 
+### Gün 16 - Satıcı paneli
+
+- `Benim ilanlarım` ekranı daha güçlü bir satıcı paneline dönüştürüldü.
+- Toplam portföy değeri, aktif değer ve toplam miktar özetleri eklendi.
+- Aktif, rezerve ve satıldı sayılarını daha görünür bir yapıda gösteren üst alan güçlendirildi.
+- Duruma göre hızlı filtreleme chip'leri eklendi.
+- Seçilen duruma göre sonuç yoksa özel boş durum ekranı eklendi.
+
 ## Proje Yapısı
 
 ```text

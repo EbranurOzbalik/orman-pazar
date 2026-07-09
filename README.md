@@ -139,6 +139,14 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - Tam ekran galeride yakınlaştırma ve küçük önizleme şeridi eklendi.
 - İlan kartlarında çoklu görsel sayısı daha görünür hale getirildi.
 
+### Gün 15 - Gelişmiş keşif
+
+- Ana ekrana sıralama seçenekleri eklendi.
+- Fiyat aralığına göre filtreleme desteği eklendi.
+- Ağaç türü ve nakliye durumuna göre ayrıntılı filtreleme eklendi.
+- Aktif filtre sayısı görünür hale getirildi.
+- Gelişmiş filtreleri tek dokunuşla temizleme akışı eklendi.
+
 ## Proje Yapısı
 
 ```text

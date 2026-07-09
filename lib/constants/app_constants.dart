@@ -10,6 +10,7 @@ class AppConstants {
 
   static const String allCategories = 'Tumu';
   static const String allStatuses = 'Tum durumlar';
+  static const String allWoodTypes = 'Tum agac turleri';
   static const String activeStatus = 'Aktif';
   static const String reservedStatus = 'Rezerve';
   static const String soldStatus = 'Satildi';

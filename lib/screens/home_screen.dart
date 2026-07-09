@@ -16,6 +16,15 @@ import 'login_screen.dart';
 import 'my_listings_screen.dart';
 import 'profile_screen.dart';
 
+enum ListingSortOption {
+  newest,
+  priceAscending,
+  priceDescending,
+  amountDescending,
+}
+
+enum DeliveryFilterOption { all, withDelivery, pickupOnly }
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -28,17 +37,24 @@ class _HomeScreenState extends State<HomeScreen> {
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
   final TextEditingController _searchController = TextEditingController();
+  final TextEditingController _minPriceController = TextEditingController();
+  final TextEditingController _maxPriceController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   Timer? _searchDebounce;
 
   String _selectedCategory = AppConstants.allCategories;
   String _selectedStatus = AppConstants.allStatuses;
+  String _selectedWoodType = AppConstants.allWoodTypes;
+  DeliveryFilterOption _deliveryFilter = DeliveryFilterOption.all;
+  ListingSortOption _sortOption = ListingSortOption.newest;
   String _searchText = '';
 
   @override
   void dispose() {
     _searchDebounce?.cancel();
     _searchController.dispose();
+    _minPriceController.dispose();
+    _maxPriceController.dispose();
     _searchFocusNode.dispose();
     super.dispose();
   }
@@ -67,14 +83,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<ListingModel> _filterListings(List<ListingModel> listings) {
     final query = _normalizeForSearch(_searchText);
+    final minPrice = _parseNumber(_minPriceController.text);
+    final maxPrice = _parseNumber(_maxPriceController.text);
 
-    return listings.where((listing) {
+    final filtered = listings.where((listing) {
       final matchesCategory =
           _selectedCategory == AppConstants.allCategories ||
           listing.category == _selectedCategory;
       final matchesStatus =
           _selectedStatus == AppConstants.allStatuses ||
           listing.status == _selectedStatus;
+      final matchesWoodType =
+          _selectedWoodType == AppConstants.allWoodTypes ||
+          listing.woodType == _selectedWoodType;
+      final matchesDelivery = switch (_deliveryFilter) {
+        DeliveryFilterOption.all => true,
+        DeliveryFilterOption.withDelivery => listing.hasDelivery,
+        DeliveryFilterOption.pickupOnly => !listing.hasDelivery,
+      };
+      final matchesMinPrice = minPrice == null || listing.price >= minPrice;
+      final matchesMaxPrice = maxPrice == null || listing.price <= maxPrice;
 
       final searchableText = [
         listing.title,
@@ -87,8 +115,76 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final matchesSearch = query.isEmpty || searchableText.contains(query);
 
-      return matchesCategory && matchesStatus && matchesSearch;
+      return matchesCategory &&
+          matchesStatus &&
+          matchesWoodType &&
+          matchesDelivery &&
+          matchesMinPrice &&
+          matchesMaxPrice &&
+          matchesSearch;
     }).toList();
+
+    filtered.sort((left, right) {
+      switch (_sortOption) {
+        case ListingSortOption.newest:
+          return right.createdAt.compareTo(left.createdAt);
+        case ListingSortOption.priceAscending:
+          return left.price.compareTo(right.price);
+        case ListingSortOption.priceDescending:
+          return right.price.compareTo(left.price);
+        case ListingSortOption.amountDescending:
+          return right.amount.compareTo(left.amount);
+      }
+    });
+
+    return filtered;
+  }
+
+  double? _parseNumber(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    return double.tryParse(trimmed.replaceAll(',', '.'));
+  }
+
+  int get _activeFilterCount {
+    var count = 0;
+
+    if (_selectedCategory != AppConstants.allCategories) {
+      count++;
+    }
+    if (_selectedStatus != AppConstants.allStatuses) {
+      count++;
+    }
+    if (_selectedWoodType != AppConstants.allWoodTypes) {
+      count++;
+    }
+    if (_deliveryFilter != DeliveryFilterOption.all) {
+      count++;
+    }
+    if (_minPriceController.text.trim().isNotEmpty) {
+      count++;
+    }
+    if (_maxPriceController.text.trim().isNotEmpty) {
+      count++;
+    }
+    if (_searchText.trim().isNotEmpty) {
+      count++;
+    }
+
+    return count;
+  }
+
+  void _clearAdvancedFilters() {
+    _minPriceController.clear();
+    _maxPriceController.clear();
+    setState(() {
+      _selectedWoodType = AppConstants.allWoodTypes;
+      _deliveryFilter = DeliveryFilterOption.all;
+      _sortOption = ListingSortOption.newest;
+    });
   }
 
   void _openAddListing(User? user) {
@@ -133,7 +229,9 @@ class _HomeScreenState extends State<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          nextValue ? 'Ilan favorilere eklendi' : 'Ilan favorilerden cikartildi',
+          nextValue
+              ? 'Ilan favorilere eklendi'
+              : 'Ilan favorilerden cikartildi',
         ),
       ),
     );
@@ -254,11 +352,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       _SearchAndFilters(
                         controller: _searchController,
+                        minPriceController: _minPriceController,
+                        maxPriceController: _maxPriceController,
                         searchFocusNode: _searchFocusNode,
                         selectedCategory: _selectedCategory,
                         selectedStatus: _selectedStatus,
+                        selectedWoodType: _selectedWoodType,
+                        deliveryFilter: _deliveryFilter,
+                        sortOption: _sortOption,
                         listingCount: allListings.length,
                         visibleCount: filteredListings.length,
+                        activeFilterCount: _activeFilterCount,
                         onSearchChanged: _queueSearchUpdate,
                         onCategorySelected: (category) {
                           setState(() => _selectedCategory = category);
@@ -266,6 +370,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         onStatusSelected: (status) {
                           setState(() => _selectedStatus = status);
                         },
+                        onWoodTypeSelected: (woodType) {
+                          setState(() => _selectedWoodType = woodType);
+                        },
+                        onDeliveryFilterChanged: (value) {
+                          setState(() => _deliveryFilter = value);
+                        },
+                        onSortOptionChanged: (value) {
+                          setState(() => _sortOption = value);
+                        },
+                        onPriceChanged: () => setState(() {}),
+                        onClearAdvancedFilters: _clearAdvancedFilters,
                       ),
                       Expanded(
                         child: _ListingsContent(
@@ -282,9 +397,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           onOpenListing: (listing) {
                             Navigator.of(context).push(
                               MaterialPageRoute(
-                                builder: (_) => ListingDetailScreen(
-                                  listing: listing,
-                                ),
+                                builder: (_) =>
+                                    ListingDetailScreen(listing: listing),
                               ),
                             );
                           },
@@ -310,30 +424,56 @@ class _HomeScreenState extends State<HomeScreen> {
 class _SearchAndFilters extends StatelessWidget {
   const _SearchAndFilters({
     required this.controller,
+    required this.minPriceController,
+    required this.maxPriceController,
     required this.searchFocusNode,
     required this.selectedCategory,
     required this.selectedStatus,
+    required this.selectedWoodType,
+    required this.deliveryFilter,
+    required this.sortOption,
     required this.listingCount,
     required this.visibleCount,
+    required this.activeFilterCount,
     required this.onSearchChanged,
     required this.onCategorySelected,
     required this.onStatusSelected,
+    required this.onWoodTypeSelected,
+    required this.onDeliveryFilterChanged,
+    required this.onSortOptionChanged,
+    required this.onPriceChanged,
+    required this.onClearAdvancedFilters,
   });
 
   final TextEditingController controller;
+  final TextEditingController minPriceController;
+  final TextEditingController maxPriceController;
   final FocusNode searchFocusNode;
   final String selectedCategory;
   final String selectedStatus;
+  final String selectedWoodType;
+  final DeliveryFilterOption deliveryFilter;
+  final ListingSortOption sortOption;
   final int listingCount;
   final int visibleCount;
+  final int activeFilterCount;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
   final ValueChanged<String> onStatusSelected;
+  final ValueChanged<String> onWoodTypeSelected;
+  final ValueChanged<DeliveryFilterOption> onDeliveryFilterChanged;
+  final ValueChanged<ListingSortOption> onSortOptionChanged;
+  final VoidCallback onPriceChanged;
+  final VoidCallback onClearAdvancedFilters;
 
   @override
   Widget build(BuildContext context) {
     final categories = [AppConstants.allCategories, ...AppConstants.categories];
-    final statuses = [AppConstants.allStatuses, ...AppConstants.listingStatuses];
+    final statuses = [
+      AppConstants.allStatuses,
+      ...AppConstants.listingStatuses,
+    ];
+    final woodTypes = [AppConstants.allWoodTypes, ...AppConstants.woodTypes];
 
     return Container(
       decoration: const BoxDecoration(
@@ -417,6 +557,19 @@ class _SearchAndFilters extends StatelessWidget {
             onChanged: onSearchChanged,
           ),
           const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _SortSelector(
+                  value: sortOption,
+                  onChanged: onSortOptionChanged,
+                ),
+              ),
+              const SizedBox(width: 10),
+              _ActiveFilterBadge(count: activeFilterCount),
+            ],
+          ),
+          const SizedBox(height: 10),
           _FilterSection(
             title: 'Kategori',
             child: SizedBox(
@@ -453,6 +606,98 @@ class _SearchAndFilters extends StatelessWidget {
                     ),
                   );
                 },
+              ),
+            ),
+          ),
+          const SizedBox(height: 10),
+          _FilterSection(
+            title: 'Ayrintili filtreler',
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _HeaderDropdownField<String>(
+                          value: selectedWoodType,
+                          items: woodTypes,
+                          labelBuilder: (value) => value,
+                          onChanged: onWoodTypeSelected,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _HeaderDropdownField<DeliveryFilterOption>(
+                          value: deliveryFilter,
+                          items: DeliveryFilterOption.values,
+                          labelBuilder: _deliveryLabel,
+                          onChanged: onDeliveryFilterChanged,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: minPriceController,
+                          keyboardType: TextInputType.number,
+                          onChanged: (_) => onPriceChanged(),
+                          style: const TextStyle(
+                            color: AppConstants.deepGreen,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Min fiyat',
+                            prefixIcon: Icon(Icons.south_west),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: TextField(
+                          controller: maxPriceController,
+                          keyboardType: TextInputType.number,
+                          onChanged: (_) => onPriceChanged(),
+                          style: const TextStyle(
+                            color: AppConstants.deepGreen,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          decoration: const InputDecoration(
+                            labelText: 'Max fiyat',
+                            prefixIcon: Icon(Icons.north_east),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton.icon(
+                      onPressed: onClearAdvancedFilters,
+                      icon: const Icon(
+                        Icons.refresh_outlined,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Filtreleri temizle',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -525,6 +770,150 @@ class _SearchAndFilters extends StatelessWidget {
       default:
         return Icons.eco_outlined;
     }
+  }
+
+  String _deliveryLabel(DeliveryFilterOption option) {
+    switch (option) {
+      case DeliveryFilterOption.all:
+        return 'Nakliye fark etmez';
+      case DeliveryFilterOption.withDelivery:
+        return 'Nakliye var';
+      case DeliveryFilterOption.pickupOnly:
+        return 'Teslim alinir';
+    }
+  }
+}
+
+class _SortSelector extends StatelessWidget {
+  const _SortSelector({required this.value, required this.onChanged});
+
+  final ListingSortOption value;
+  final ValueChanged<ListingSortOption> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<ListingSortOption>(
+          value: value,
+          isExpanded: true,
+          dropdownColor: Colors.white,
+          iconEnabledColor: AppConstants.forestGreen,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppConstants.deepGreen,
+            fontWeight: FontWeight.w700,
+          ),
+          items: ListingSortOption.values.map((option) {
+            return DropdownMenuItem(
+              value: option,
+              child: Text(_labelFor(option)),
+            );
+          }).toList(),
+          onChanged: (nextValue) {
+            if (nextValue != null) {
+              onChanged(nextValue);
+            }
+          },
+        ),
+      ),
+    );
+  }
+
+  String _labelFor(ListingSortOption option) {
+    switch (option) {
+      case ListingSortOption.newest:
+        return 'Siralama: En yeni';
+      case ListingSortOption.priceAscending:
+        return 'Siralama: Fiyat artan';
+      case ListingSortOption.priceDescending:
+        return 'Siralama: Fiyat azalan';
+      case ListingSortOption.amountDescending:
+        return 'Siralama: Miktar coktan aza';
+    }
+  }
+}
+
+class _ActiveFilterBadge extends StatelessWidget {
+  const _ActiveFilterBadge({required this.count});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: count > 0
+            ? AppConstants.amber
+            : Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: count > 0
+              ? AppConstants.amber
+              : Colors.white.withValues(alpha: 0.14),
+        ),
+      ),
+      child: Text(
+        count > 0 ? '$count filtre aktif' : 'Hazir',
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          color: count > 0 ? AppConstants.deepGreen : Colors.white,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderDropdownField<T> extends StatelessWidget {
+  const _HeaderDropdownField({
+    required this.value,
+    required this.items,
+    required this.labelBuilder,
+    required this.onChanged,
+  });
+
+  final T value;
+  final List<T> items;
+  final String Function(T value) labelBuilder;
+  final ValueChanged<T> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<T>(
+          value: value,
+          isExpanded: true,
+          dropdownColor: Colors.white,
+          iconEnabledColor: AppConstants.forestGreen,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppConstants.deepGreen,
+            fontWeight: FontWeight.w700,
+          ),
+          items: items.map((item) {
+            return DropdownMenuItem<T>(
+              value: item,
+              child: Text(labelBuilder(item), overflow: TextOverflow.ellipsis),
+            );
+          }).toList(),
+          onChanged: (nextValue) {
+            if (nextValue != null) {
+              onChanged(nextValue);
+            }
+          },
+        ),
+      ),
+    );
   }
 }
 

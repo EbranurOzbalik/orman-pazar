@@ -26,13 +26,31 @@ class UserService {
     final existingUser = await getUserById(id);
 
     if (existingUser != null) {
+      final resolvedName = existingUser.name.trim().isNotEmpty
+          ? existingUser.name
+          : name;
+      final resolvedEmail = existingUser.email.trim().isNotEmpty
+          ? existingUser.email
+          : email;
+      final resolvedPhone = existingUser.phone.trim().isNotEmpty
+          ? existingUser.phone
+          : phone;
+
       final mergedUser = AppUserModel(
         id: existingUser.id,
-        name: existingUser.name.trim().isNotEmpty ? existingUser.name : name,
-        email: existingUser.email.trim().isNotEmpty
-            ? existingUser.email
-            : email,
-        phone: existingUser.phone.trim().isNotEmpty ? existingUser.phone : phone,
+        name: resolvedName,
+        email: resolvedEmail,
+        phone: resolvedPhone,
+        profileCompleted: _isProfileCompleted(
+          name: resolvedName,
+          email: resolvedEmail,
+          phone: resolvedPhone,
+        ),
+        trustScore: _buildTrustScore(
+          name: resolvedName,
+          email: resolvedEmail,
+          phone: resolvedPhone,
+        ),
         favoriteListingIds: existingUser.favoriteListingIds,
         createdAt: existingUser.createdAt,
       );
@@ -46,6 +64,12 @@ class UserService {
       name: name,
       email: email,
       phone: phone,
+      profileCompleted: _isProfileCompleted(
+        name: name,
+        email: email,
+        phone: phone,
+      ),
+      trustScore: _buildTrustScore(name: name, email: email, phone: phone),
       createdAt: DateTime.now(),
     );
 
@@ -54,9 +78,28 @@ class UserService {
   }
 
   Future<void> updateUser(AppUserModel user) async {
+    final normalizedUser = AppUserModel(
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      createdAt: user.createdAt,
+      profileCompleted: _isProfileCompleted(
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      ),
+      trustScore: _buildTrustScore(
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+      ),
+      favoriteListingIds: user.favoriteListingIds,
+    );
+
     await _usersCollection
         .doc(user.id)
-        .set(user.toMap(), SetOptions(merge: true));
+        .set(normalizedUser.toMap(), SetOptions(merge: true));
   }
 
   Future<AppUserModel?> getUserById(String id) async {
@@ -116,9 +159,34 @@ class UserService {
     required bool isFavorite,
   }) {
     if (isFavorite) {
-      return removeFavorite(userId: userId, listingId: listingId).then((_) => false);
+      return removeFavorite(
+        userId: userId,
+        listingId: listingId,
+      ).then((_) => false);
     }
 
     return addFavorite(userId: userId, listingId: listingId).then((_) => true);
+  }
+
+  bool _isProfileCompleted({
+    required String name,
+    required String email,
+    required String phone,
+  }) {
+    return name.trim().isNotEmpty &&
+        email.trim().isNotEmpty &&
+        phone.trim().isNotEmpty;
+  }
+
+  int _buildTrustScore({
+    required String name,
+    required String email,
+    required String phone,
+  }) {
+    return [
+      if (name.trim().isNotEmpty) 1,
+      if (email.trim().isNotEmpty) 1,
+      if (phone.trim().isNotEmpty) 1,
+    ].length;
   }
 }

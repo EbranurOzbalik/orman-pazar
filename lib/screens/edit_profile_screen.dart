@@ -48,6 +48,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       email: widget.profile.email,
       phone: _phoneController.text.trim(),
       createdAt: widget.profile.createdAt,
+      favoriteListingIds: widget.profile.favoriteListingIds,
+      profileCompleted: widget.profile.profileCompleted,
+      trustScore: widget.profile.trustScore,
     );
 
     try {

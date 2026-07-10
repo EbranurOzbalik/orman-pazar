@@ -51,7 +51,8 @@ class SellerProfileScreen extends StatelessWidget {
               return StreamBuilder<List<ListingModel>>(
                 stream: _listingService.getListingsBySeller(sellerId),
                 builder: (context, listingSnapshot) {
-                  if (listingSnapshot.connectionState == ConnectionState.waiting) {
+                  if (listingSnapshot.connectionState ==
+                      ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
                   }
 
@@ -65,22 +66,41 @@ class SellerProfileScreen extends StatelessWidget {
 
                   final listings = listingSnapshot.data ?? [];
                   final activeCount = listings
-                      .where((listing) => listing.status == AppConstants.activeStatus)
+                      .where(
+                        (listing) =>
+                            listing.status == AppConstants.activeStatus,
+                      )
                       .length;
                   final soldCount = listings
-                      .where((listing) => listing.status == AppConstants.soldStatus)
+                      .where(
+                        (listing) => listing.status == AppConstants.soldStatus,
+                      )
                       .length;
+                  final reservedCount = listings
+                      .where(
+                        (listing) =>
+                            listing.status == AppConstants.reservedStatus,
+                      )
+                      .length;
+                  final profileStrength =
+                      (profile?.trustScore ?? 0) +
+                      (listings.isNotEmpty ? 1 : 0);
 
                   return ListView(
                     padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
                     children: [
                       _SellerHero(
-                        sellerName: displayName.isEmpty ? 'Kullanici' : displayName,
+                        sellerName: displayName.isEmpty
+                            ? 'Kullanici'
+                            : displayName,
                         email: displayEmail,
                         phone: displayPhone,
                         totalCount: listings.length,
                         activeCount: activeCount,
+                        reservedCount: reservedCount,
                         soldCount: soldCount,
+                        createdAt: profile?.createdAt,
+                        profileStrength: profileStrength,
                       ),
                       const SizedBox(height: 14),
                       _SectionPanel(
@@ -90,7 +110,9 @@ class SellerProfileScreen extends StatelessWidget {
                           _InfoTile(
                             icon: Icons.person_outline,
                             label: 'Ad soyad',
-                            value: displayName.isEmpty ? 'Kullanici' : displayName,
+                            value: displayName.isEmpty
+                                ? 'Kullanici'
+                                : displayName,
                           ),
                           _InfoTile(
                             icon: Icons.phone_outlined,
@@ -101,6 +123,11 @@ class SellerProfileScreen extends StatelessWidget {
                             icon: Icons.inventory_2_outlined,
                             label: 'Toplam ilan',
                             value: listings.length.toString(),
+                          ),
+                          _InfoTile(
+                            icon: Icons.verified_user_outlined,
+                            label: 'Guven gorunumu',
+                            value: '$profileStrength/4 temel sinyal hazir',
                             isLast: true,
                           ),
                         ],
@@ -108,7 +135,8 @@ class SellerProfileScreen extends StatelessWidget {
                       const SizedBox(height: 14),
                       _SectionPanel(
                         title: 'Saticinin ilanlari',
-                        subtitle: 'Bu saticinin yayinda olan ve gecmis ilanlari.',
+                        subtitle:
+                            'Bu saticinin yayinda olan ve gecmis ilanlari.',
                         children: [
                           if (listings.isEmpty)
                             const _EmptyListingsState()
@@ -163,7 +191,10 @@ class _SellerHero extends StatelessWidget {
     required this.phone,
     required this.totalCount,
     required this.activeCount,
+    required this.reservedCount,
     required this.soldCount,
+    required this.createdAt,
+    required this.profileStrength,
   });
 
   final String sellerName;
@@ -171,7 +202,10 @@ class _SellerHero extends StatelessWidget {
   final String phone;
   final int totalCount;
   final int activeCount;
+  final int reservedCount;
   final int soldCount;
+  final DateTime? createdAt;
+  final int profileStrength;
 
   @override
   Widget build(BuildContext context) {
@@ -217,10 +251,11 @@ class _SellerHero extends StatelessWidget {
                   children: [
                     Text(
                       sellerName,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                          ),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -240,36 +275,54 @@ class _SellerHero extends StatelessWidget {
                         ),
                       ),
                     ],
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        _HeroBadge(
+                          icon: Icons.verified_user_outlined,
+                          text: 'Guven $profileStrength/4',
+                        ),
+                        _HeroBadge(
+                          icon: Icons.badge_outlined,
+                          text: _memberSinceText(createdAt),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          Row(
+          GridView.count(
+            crossAxisCount: 2,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            childAspectRatio: 2.6,
             children: [
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Toplam',
-                  value: totalCount.toString(),
-                  icon: Icons.storefront_outlined,
-                ),
+              _HeroMetric(
+                label: 'Toplam',
+                value: totalCount.toString(),
+                icon: Icons.storefront_outlined,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Aktif',
-                  value: activeCount.toString(),
-                  icon: Icons.bolt_outlined,
-                ),
+              _HeroMetric(
+                label: 'Aktif',
+                value: activeCount.toString(),
+                icon: Icons.bolt_outlined,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _HeroMetric(
-                  label: 'Satildi',
-                  value: soldCount.toString(),
-                  icon: Icons.check_circle_outline,
-                ),
+              _HeroMetric(
+                label: 'Rezerve',
+                value: reservedCount.toString(),
+                icon: Icons.schedule_outlined,
+              ),
+              _HeroMetric(
+                label: 'Satildi',
+                value: soldCount.toString(),
+                icon: Icons.check_circle_outline,
               ),
             ],
           ),
@@ -291,6 +344,55 @@ class _SellerHero extends StatelessWidget {
     }
 
     return parts.map((part) => part.substring(0, 1).toUpperCase()).join();
+  }
+
+  String _memberSinceText(DateTime? date) {
+    if (date == null) {
+      return 'Uye tarihi yok';
+    }
+
+    final months = (DateTime.now().difference(date).inDays / 30).floor();
+    if (months <= 0) {
+      return 'Yeni uye';
+    }
+    if (months < 12) {
+      return '$months aydir uye';
+    }
+
+    return '${(months / 12).floor()} yildir uye';
+  }
+}
+
+class _HeroBadge extends StatelessWidget {
+  const _HeroBadge({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: AppConstants.amber),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

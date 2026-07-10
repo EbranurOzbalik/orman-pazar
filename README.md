@@ -155,6 +155,14 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - Duruma göre hızlı filtreleme chip'leri eklendi.
 - Seçilen duruma göre sonuç yoksa özel boş durum ekranı eklendi.
 
+### Gün 17 - Güven sinyalleri
+
+- İlan detay ekranına satıcı güven sinyalleri alanı eklendi.
+- Satıcının üyelik süresi, profil doluluk hissi ve ilan geçmişi görünür hale geldi.
+- İlanın ne kadar önce eklendiği detaya bağlandı.
+- Satıcı profilinde güven rozeti ve üyelik süresi alanı güçlendirildi.
+- Satıcı profiline rezerve ilan sayısı da eklendi.
+
 ## Proje Yapısı
 
 ```text

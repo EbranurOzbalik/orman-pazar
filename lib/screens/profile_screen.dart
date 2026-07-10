@@ -46,6 +46,8 @@ class ProfileScreen extends StatelessWidget {
                 email: user.email ?? '',
                 phone: '',
                 createdAt: DateTime.now(),
+                profileCompleted: false,
+                trustScore: 0,
               );
 
           return StreamBuilder<List<ListingModel>>(

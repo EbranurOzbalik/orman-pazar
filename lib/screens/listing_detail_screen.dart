@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
+import '../models/app_user_model.dart';
 import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
@@ -143,150 +144,191 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
         final favoriteIds = favoriteSnapshot.data ?? <String>{};
         final isFavorite = favoriteIds.contains(widget.listing.id);
 
-        return Scaffold(
-          appBar: AppBar(
-            title: const Text('Ilan detayi'),
-            actions: [
-              IconButton(
-                tooltip: isFavorite ? 'Favoriden cikar' : 'Favorilere ekle',
-                onPressed: () => _toggleFavorite(isFavorite: isFavorite),
-                icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border),
+        return StreamBuilder<AppUserModel?>(
+          stream: _userService.watchUserById(widget.listing.sellerId),
+          builder: (context, sellerSnapshot) {
+            final sellerProfile = sellerSnapshot.data;
+
+            return StreamBuilder<List<ListingModel>>(
+              stream: _listingService.getListingsBySeller(
+                widget.listing.sellerId,
               ),
-              if (isOwner)
-                PopupMenuButton<String>(
-                  onSelected: (value) {
-                    if (value == 'edit') {
-                      _openEditScreen(context);
-                    }
-                    if (value == 'delete') {
-                      _deleteListing(context);
-                    }
-                  },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: 'edit',
-                      child: Row(
-                        children: [
-                          Icon(Icons.edit_outlined),
-                          SizedBox(width: 8),
-                          Text('Duzenle'),
-                        ],
+              builder: (context, sellerListingsSnapshot) {
+                final sellerListings =
+                    sellerListingsSnapshot.data ?? const <ListingModel>[];
+
+                return Scaffold(
+                  appBar: AppBar(
+                    title: const Text('Ilan detayi'),
+                    actions: [
+                      IconButton(
+                        tooltip: isFavorite
+                            ? 'Favoriden cikar'
+                            : 'Favorilere ekle',
+                        onPressed: () =>
+                            _toggleFavorite(isFavorite: isFavorite),
+                        icon: Icon(
+                          isFavorite ? Icons.favorite : Icons.favorite_border,
+                        ),
                       ),
-                    ),
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, color: Colors.redAccent),
-                          SizedBox(width: 8),
-                          Text('Sil'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          body: ListView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-            children: [
-              _ImageGalleryPanel(
-                imageUrls: widget.listing.imageUrls,
-                onOpenImage: (index) {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ImageGalleryScreen(
+                      if (isOwner)
+                        PopupMenuButton<String>(
+                          onSelected: (value) {
+                            if (value == 'edit') {
+                              _openEditScreen(context);
+                            }
+                            if (value == 'delete') {
+                              _deleteListing(context);
+                            }
+                          },
+                          itemBuilder: (context) => const [
+                            PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_outlined),
+                                  SizedBox(width: 8),
+                                  Text('Duzenle'),
+                                ],
+                              ),
+                            ),
+                            PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete_outline,
+                                    color: Colors.redAccent,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('Sil'),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                    ],
+                  ),
+                  body: ListView(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                    children: [
+                      _ImageGalleryPanel(
                         imageUrls: widget.listing.imageUrls,
-                        initialIndex: index,
-                        title: widget.listing.title,
+                        onOpenImage: (index) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ImageGalleryScreen(
+                                imageUrls: widget.listing.imageUrls,
+                                initialIndex: index,
+                                title: widget.listing.title,
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 14),
-              _DetailHero(
-                listing: widget.listing,
-                isOwner: isOwner,
-                isFavorite: isFavorite,
-              ),
-              const SizedBox(height: 14),
-              _ContactPanel(
-                listing: widget.listing,
-                onOpenSellerProfile: () => _openSellerProfile(context),
-              ),
-              const SizedBox(height: 14),
-              _InfoPanel(
-                title: 'Ilan bilgileri',
-                subtitle: 'Urunun temel ozellikleri ve satis ayrintilari.',
-                children: [
-                  _DetailRow(
-                    icon: Icons.favorite_outline,
-                    label: 'Favori durumu',
-                    value: isFavorite ? 'Kaydedildi' : 'Kayitli degil',
-                    valueColor: isFavorite ? AppConstants.clay : null,
+                      const SizedBox(height: 14),
+                      _DetailHero(
+                        listing: widget.listing,
+                        isOwner: isOwner,
+                        isFavorite: isFavorite,
+                      ),
+                      const SizedBox(height: 14),
+                      _ContactPanel(
+                        listing: widget.listing,
+                        onOpenSellerProfile: () => _openSellerProfile(context),
+                      ),
+                      const SizedBox(height: 14),
+                      _TrustPanel(
+                        listing: widget.listing,
+                        sellerProfile: sellerProfile,
+                        sellerListings: sellerListings,
+                        onOpenSellerProfile: () => _openSellerProfile(context),
+                      ),
+                      const SizedBox(height: 14),
+                      _InfoPanel(
+                        title: 'Ilan bilgileri',
+                        subtitle:
+                            'Urunun temel ozellikleri ve satis ayrintilari.',
+                        children: [
+                          _DetailRow(
+                            icon: Icons.favorite_outline,
+                            label: 'Favori durumu',
+                            value: isFavorite ? 'Kaydedildi' : 'Kayitli degil',
+                            valueColor: isFavorite ? AppConstants.clay : null,
+                          ),
+                          _DetailRow(
+                            icon: Icons.bolt_outlined,
+                            label: 'Durum',
+                            value: widget.listing.status,
+                            valueColor: AppConstants.listingStatusColor(
+                              widget.listing.status,
+                            ),
+                          ),
+                          _DetailRow(
+                            icon: Icons.person_outline,
+                            label: 'Satici',
+                            value: widget.listing.sellerName.isEmpty
+                                ? 'Kullanici'
+                                : widget.listing.sellerName,
+                            onTap: () => _openSellerProfile(context),
+                          ),
+                          _DetailRow(
+                            icon: Icons.schedule_outlined,
+                            label: 'Yayin zamani',
+                            value: _formatRelativeDate(
+                              widget.listing.createdAt,
+                            ),
+                          ),
+                          _DetailRow(
+                            icon: Icons.park_outlined,
+                            label: 'Agac turu',
+                            value: widget.listing.woodType,
+                          ),
+                          _DetailRow(
+                            icon: Icons.water_drop_outlined,
+                            label: 'Nem durumu',
+                            value: widget.listing.moistureStatus,
+                          ),
+                          _DetailRow(
+                            icon: Icons.local_shipping_outlined,
+                            label: 'Nakliye',
+                            value: widget.listing.hasDelivery ? 'Var' : 'Yok',
+                          ),
+                          _DetailRow(
+                            icon: Icons.sell_outlined,
+                            label: 'Kategori',
+                            value: widget.listing.category,
+                          ),
+                          _DetailRow(
+                            icon: Icons.scale_outlined,
+                            label: 'Olcu',
+                            value:
+                                '${_formatNumber(widget.listing.amount)} ${widget.listing.unit}',
+                            isLast: true,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      _InfoPanel(
+                        title: 'Aciklama',
+                        subtitle: 'Saticinin urun icin ekledigi notlar.',
+                        children: [
+                          Text(
+                            widget.listing.description,
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(
+                                  color: AppConstants.deepGreen,
+                                  height: 1.45,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  _DetailRow(
-                    icon: Icons.bolt_outlined,
-                    label: 'Durum',
-                    value: widget.listing.status,
-                    valueColor: AppConstants.listingStatusColor(
-                      widget.listing.status,
-                    ),
-                  ),
-                  _DetailRow(
-                    icon: Icons.person_outline,
-                    label: 'Satici',
-                    value: widget.listing.sellerName.isEmpty
-                        ? 'Kullanici'
-                        : widget.listing.sellerName,
-                    onTap: () => _openSellerProfile(context),
-                  ),
-                  _DetailRow(
-                    icon: Icons.park_outlined,
-                    label: 'Agac turu',
-                    value: widget.listing.woodType,
-                  ),
-                  _DetailRow(
-                    icon: Icons.water_drop_outlined,
-                    label: 'Nem durumu',
-                    value: widget.listing.moistureStatus,
-                  ),
-                  _DetailRow(
-                    icon: Icons.local_shipping_outlined,
-                    label: 'Nakliye',
-                    value: widget.listing.hasDelivery ? 'Var' : 'Yok',
-                  ),
-                  _DetailRow(
-                    icon: Icons.sell_outlined,
-                    label: 'Kategori',
-                    value: widget.listing.category,
-                  ),
-                  _DetailRow(
-                    icon: Icons.scale_outlined,
-                    label: 'Olcu',
-                    value:
-                        '${_formatNumber(widget.listing.amount)} ${widget.listing.unit}',
-                    isLast: true,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 14),
-              _InfoPanel(
-                title: 'Aciklama',
-                subtitle: 'Saticinin urun icin ekledigi notlar.',
-                children: [
-                  Text(
-                    widget.listing.description,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppConstants.deepGreen,
-                      height: 1.45,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+                );
+              },
+            );
+          },
         );
       },
     );
@@ -297,6 +339,280 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
       return value.toStringAsFixed(0);
     }
     return value.toStringAsFixed(2);
+  }
+
+  String _formatRelativeDate(DateTime date) {
+    final difference = DateTime.now().difference(date);
+
+    if (difference.inMinutes < 60) {
+      final minutes = difference.inMinutes.clamp(1, 59);
+      return '$minutes dk once';
+    }
+    if (difference.inHours < 24) {
+      return '${difference.inHours} saat once';
+    }
+    if (difference.inDays < 7) {
+      return '${difference.inDays} gun once';
+    }
+    if (difference.inDays < 30) {
+      return '${(difference.inDays / 7).floor()} hafta once';
+    }
+    if (difference.inDays < 365) {
+      return '${(difference.inDays / 30).floor()} ay once';
+    }
+
+    return '${(difference.inDays / 365).floor()} yil once';
+  }
+}
+
+class _TrustPanel extends StatelessWidget {
+  const _TrustPanel({
+    required this.listing,
+    required this.sellerProfile,
+    required this.sellerListings,
+    required this.onOpenSellerProfile,
+  });
+
+  final ListingModel listing;
+  final AppUserModel? sellerProfile;
+  final List<ListingModel> sellerListings;
+  final VoidCallback onOpenSellerProfile;
+
+  @override
+  Widget build(BuildContext context) {
+    final activeCount = sellerListings
+        .where((item) => item.status == AppConstants.activeStatus)
+        .length;
+    final soldCount = sellerListings
+        .where((item) => item.status == AppConstants.soldStatus)
+        .length;
+    final hasPhone =
+        (sellerProfile?.phone.trim().isNotEmpty ?? false) ||
+        listing.phone.trim().isNotEmpty;
+    final hasName = sellerProfile?.name.trim().isNotEmpty ?? false;
+    final hasEmail = sellerProfile?.email.trim().isNotEmpty ?? false;
+    final persistedTrustScore = sellerProfile?.trustScore ?? 0;
+    final trustScore =
+        persistedTrustScore + (sellerListings.isNotEmpty ? 1 : 0);
+    final memberSince = sellerProfile == null
+        ? 'Profil tarihi yok'
+        : _formatMemberSince(sellerProfile!.createdAt);
+
+    return _InfoPanel(
+      title: 'Guven sinyalleri',
+      subtitle: 'Satici ve ilanin karar vermeyi kolaylastiran ozet bilgileri.',
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            _TrustChip(
+              icon: Icons.verified_user_outlined,
+              text: 'Guven puani $trustScore/4',
+              color: AppConstants.forestGreen,
+            ),
+            _TrustChip(
+              icon: Icons.badge_outlined,
+              text: memberSince,
+              color: AppConstants.woodBrown,
+            ),
+            _TrustChip(
+              icon: Icons.inventory_2_outlined,
+              text: '${sellerListings.length} ilan gecmisi',
+              color: AppConstants.leafGreen,
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        Row(
+          children: [
+            Expanded(
+              child: _TrustMetric(
+                label: 'Aktif ilan',
+                value: activeCount.toString(),
+                icon: Icons.bolt_outlined,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _TrustMetric(
+                label: 'Satilan ilan',
+                value: soldCount.toString(),
+                icon: Icons.check_circle_outline,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        _DetailRow(
+          icon: Icons.phone_outlined,
+          label: 'Telefon durumu',
+          value: hasPhone ? 'Telefon paylasilmis' : 'Telefon eksik',
+          valueColor: hasPhone ? AppConstants.leafGreen : AppConstants.clay,
+        ),
+        _DetailRow(
+          icon: Icons.person_outline,
+          label: 'Profil doluluk',
+          value: sellerProfile?.profileCompleted == true
+              ? 'Profil temel bilgileri tamam'
+              : _profileCompletenessText(
+                  hasName: hasName,
+                  hasEmail: hasEmail,
+                  hasPhone: hasPhone,
+                ),
+        ),
+        _DetailRow(
+          icon: Icons.schedule_outlined,
+          label: 'Ilan tazeligi',
+          value: _formatListingAge(listing.createdAt),
+          isLast: true,
+        ),
+        const SizedBox(height: 14),
+        OutlinedButton.icon(
+          onPressed: onOpenSellerProfile,
+          icon: const Icon(Icons.storefront_outlined),
+          label: const Text('Satici profilini incele'),
+        ),
+      ],
+    );
+  }
+
+  String _formatMemberSince(DateTime date) {
+    final months = ((DateTime.now().difference(date).inDays) / 30).floor();
+    if (months <= 0) {
+      return 'Yeni uye';
+    }
+    if (months < 12) {
+      return '$months aydir uye';
+    }
+
+    final years = (months / 12).floor();
+    return '$years yildir uye';
+  }
+
+  String _formatListingAge(DateTime date) {
+    final difference = DateTime.now().difference(date);
+    if (difference.inDays <= 0) {
+      return 'Bugun eklendi';
+    }
+    if (difference.inDays == 1) {
+      return 'Dun eklendi';
+    }
+    return '${difference.inDays} gun once eklendi';
+  }
+
+  String _profileCompletenessText({
+    required bool hasName,
+    required bool hasEmail,
+    required bool hasPhone,
+  }) {
+    final count = [hasName, hasEmail, hasPhone].where((item) => item).length;
+    if (count == 3) {
+      return 'Profil temel bilgileri tamam';
+    }
+    if (count == 2) {
+      return 'Profil buyuk oranda dolu';
+    }
+    if (count == 1) {
+      return 'Profil kismen dolu';
+    }
+    return 'Profil bilgileri sinirli';
+  }
+}
+
+class _TrustChip extends StatelessWidget {
+  const _TrustChip({
+    required this.icon,
+    required this.text,
+    required this.color,
+  });
+
+  final IconData icon;
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: color),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: color,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrustMetric extends StatelessWidget {
+  const _TrustMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppConstants.cream,
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppConstants.mossGreen,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: AppConstants.forestGreen, size: 18),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: AppConstants.mutedText,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: AppConstants.deepGreen,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

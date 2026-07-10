@@ -7,6 +7,8 @@ class AppUserModel {
     required this.email,
     required this.phone,
     required this.createdAt,
+    this.profileCompleted = false,
+    this.trustScore = 0,
     this.favoriteListingIds = const [],
   });
 
@@ -15,6 +17,8 @@ class AppUserModel {
   final String email;
   final String phone;
   final DateTime createdAt;
+  final bool profileCompleted;
+  final int trustScore;
   final List<String> favoriteListingIds;
 
   String get displayName {
@@ -35,6 +39,8 @@ class AppUserModel {
       'name': name,
       'email': email,
       'phone': phone,
+      'profileCompleted': profileCompleted,
+      'trustScore': trustScore,
       'favoriteListingIds': favoriteListingIds,
       'createdAt': Timestamp.fromDate(createdAt),
     };
@@ -46,6 +52,8 @@ class AppUserModel {
       name: map['name'] as String? ?? '',
       email: map['email'] as String? ?? '',
       phone: map['phone'] as String? ?? '',
+      profileCompleted: map['profileCompleted'] as bool? ?? false,
+      trustScore: _toInt(map['trustScore']),
       favoriteListingIds: _toStringList(map['favoriteListingIds']),
       createdAt: _toDateTime(map['createdAt']),
     );
@@ -66,5 +74,15 @@ class AppUserModel {
       return value;
     }
     return DateTime.now();
+  }
+
+  static int _toInt(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+    if (value is double) {
+      return value.round();
+    }
+    return 0;
   }
 }

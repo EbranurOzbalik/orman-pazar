@@ -6,6 +6,7 @@ class AppConstants {
   static const String appName = 'Orman Pazar';
   static const String listingsCollection = 'listings';
   static const String usersCollection = 'users';
+  static const String reportsCollection = 'reports';
   static const String listingImagesFolder = 'listing_images';
 
   static const String allCategories = 'Tumu';
@@ -39,6 +40,14 @@ class AppConstants {
     activeStatus,
     reservedStatus,
     soldStatus,
+  ];
+
+  static const List<String> reportReasons = [
+    'Yanlis bilgi',
+    'Supheli ilan',
+    'Uygunsuz icerik',
+    'Fiyat yaniltici',
+    'Diger',
   ];
 
   static const Color forestGreen = Color(0xFF244E34);

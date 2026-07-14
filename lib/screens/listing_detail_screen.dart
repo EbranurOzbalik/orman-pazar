@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 import '../constants/app_constants.dart';
 import '../models/app_user_model.dart';
 import '../models/listing_model.dart';
+import '../models/report_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
+import '../services/report_service.dart';
 import '../services/user_service.dart';
 import 'edit_listing_screen.dart';
 import 'image_gallery_screen.dart';
@@ -23,6 +25,7 @@ class ListingDetailScreen extends StatefulWidget {
 class _ListingDetailScreenState extends State<ListingDetailScreen> {
   final AuthService _authService = AuthService();
   final ListingService _listingService = ListingService();
+  final ReportService _reportService = ReportService();
   final UserService _userService = UserService();
 
   Future<void> _openEditScreen(BuildContext context) async {
@@ -131,6 +134,72 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     );
   }
 
+  Future<void> _openReportDialog() async {
+    final user = _authService.currentUser;
+    if (user == null) {
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+
+    if (user.uid == widget.listing.sellerId) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Kendi ilanini raporlayamazsin')),
+      );
+      return;
+    }
+
+    final result = await showDialog<_ReportFormResult>(
+      context: context,
+      builder: (dialogContext) {
+        return _ReportListingDialog(listingTitle: widget.listing.title);
+      },
+    );
+
+    if (result == null) {
+      return;
+    }
+
+    final report = ReportModel(
+      id: '',
+      listingId: widget.listing.id,
+      listingTitle: widget.listing.title,
+      sellerId: widget.listing.sellerId,
+      reporterId: user.uid,
+      reason: result.reason,
+      note: result.note,
+      status: 'open',
+      createdAt: DateTime.now(),
+    );
+
+    try {
+      await _reportService.addReport(report);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Raporun alindi, inceleme icin kaydedildi'),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Rapor gonderilemedi: $error')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
@@ -236,6 +305,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       _ContactPanel(
                         listing: widget.listing,
                         onOpenSellerProfile: () => _openSellerProfile(context),
+                        onReportListing: _openReportDialog,
+                        isOwner: isOwner,
                       ),
                       const SizedBox(height: 14),
                       _TrustPanel(
@@ -1081,10 +1152,14 @@ class _ContactPanel extends StatelessWidget {
   const _ContactPanel({
     required this.listing,
     required this.onOpenSellerProfile,
+    required this.onReportListing,
+    required this.isOwner,
   });
 
   final ListingModel listing;
   final VoidCallback onOpenSellerProfile;
+  final VoidCallback onReportListing;
+  final bool isOwner;
 
   @override
   Widget build(BuildContext context) {
@@ -1144,6 +1219,14 @@ class _ContactPanel extends StatelessWidget {
             icon: const Icon(Icons.storefront_outlined),
             label: const Text('Saticinin diger ilanlari'),
           ),
+          if (!isOwner) ...[
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              onPressed: onReportListing,
+              icon: const Icon(Icons.flag_outlined),
+              label: const Text('Ilani rapor et'),
+            ),
+          ],
           if (listing.status != AppConstants.activeStatus) ...[
             const SizedBox(height: 12),
             Container(
@@ -1178,6 +1261,103 @@ class _ContactPanel extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _ReportFormResult {
+  const _ReportFormResult({required this.reason, required this.note});
+
+  final String reason;
+  final String note;
+}
+
+class _ReportListingDialog extends StatefulWidget {
+  const _ReportListingDialog({required this.listingTitle});
+
+  final String listingTitle;
+
+  @override
+  State<_ReportListingDialog> createState() => _ReportListingDialogState();
+}
+
+class _ReportListingDialogState extends State<_ReportListingDialog> {
+  final _noteController = TextEditingController();
+  String _selectedReason = AppConstants.reportReasons.first;
+
+  @override
+  void dispose() {
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Ilani rapor et'),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.listingTitle,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: AppConstants.deepGreen,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              initialValue: _selectedReason,
+              decoration: const InputDecoration(
+                labelText: 'Rapor nedeni',
+                prefixIcon: Icon(Icons.flag_outlined),
+              ),
+              items: AppConstants.reportReasons.map((reason) {
+                return DropdownMenuItem<String>(
+                  value: reason,
+                  child: Text(reason),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() => _selectedReason = value);
+                }
+              },
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _noteController,
+              minLines: 3,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Ek not',
+                hintText: 'Kisa bir aciklama ekleyebilirsin',
+                prefixIcon: Icon(Icons.notes_outlined),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Vazgec'),
+        ),
+        FilledButton.icon(
+          onPressed: () {
+            Navigator.of(context).pop(
+              _ReportFormResult(
+                reason: _selectedReason,
+                note: _noteController.text.trim(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.send_outlined),
+          label: const Text('Gonder'),
+        ),
+      ],
     );
   }
 }

@@ -163,6 +163,14 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - Satıcı profilinde güven rozeti ve üyelik süresi alanı güçlendirildi.
 - Satıcı profiline rezerve ilan sayısı da eklendi.
 
+### Gün 18 - İlan raporlama temeli
+
+- `ReportModel` ve `ReportService` ile raporlama altyapısı eklendi.
+- Firestore için `reports` koleksiyonu hazırlığı yapıldı.
+- İlan detay ekranına `İlanı rapor et` akışı eklendi.
+- Kullanıcılar seçili neden ve ek not ile rapor bırakabilir hale geldi.
+- Kullanıcının kendi ilanını raporlaması engellendi.
+
 ## Proje Yapısı
 
 ```text
@@ -172,6 +180,7 @@ lib/
   models/
     app_user_model.dart
     listing_model.dart
+    report_model.dart
   screens/
     add_listing_screen.dart
     edit_listing_screen.dart
@@ -188,6 +197,7 @@ lib/
   services/
     auth_service.dart
     listing_service.dart
+    report_service.dart
     user_service.dart
   widgets/
     listing_card.dart

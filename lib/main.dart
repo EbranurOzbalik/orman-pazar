@@ -69,6 +69,38 @@ class OrmanPazarApp extends StatelessWidget {
             ),
           ),
         ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            minimumSize: const Size(0, 44),
+            foregroundColor: AppConstants.deepGreen,
+            side: const BorderSide(color: AppConstants.border),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+        ),
+        chipTheme: ChipThemeData(
+          backgroundColor: AppConstants.cardBackground,
+          selectedColor: AppConstants.amber,
+          side: const BorderSide(color: AppConstants.border),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+          labelStyle: const TextStyle(
+            color: AppConstants.deepGreen,
+            fontWeight: FontWeight.w700,
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: AppConstants.deepGreen,
+          contentTextStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          behavior: SnackBarBehavior.floating,
+        ),
         floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: AppConstants.forestGreen,
           foregroundColor: Colors.white,
@@ -121,10 +153,7 @@ class _AppBootstrapState extends State<_AppBootstrap> {
         }
 
         if (snapshot.hasError) {
-          return _FirebaseErrorScreen(
-            error: snapshot.error,
-            onRetry: _retry,
-          );
+          return _FirebaseErrorScreen(error: snapshot.error, onRetry: _retry);
         }
 
         return const HomeScreen();
@@ -170,9 +199,9 @@ class _FirebaseLoadingScreen extends StatelessWidget {
               Text(
                 'Firebase baglantisi hazirlaniyor...',
                 textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppConstants.mutedText,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: AppConstants.mutedText),
               ),
               const SizedBox(height: 18),
               const CircularProgressIndicator(),

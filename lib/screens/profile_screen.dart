@@ -6,6 +6,7 @@ import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
 import '../services/user_service.dart';
+import '../widgets/app_surfaces.dart';
 import 'edit_profile_screen.dart';
 import 'login_screen.dart';
 
@@ -241,34 +242,10 @@ class _ProfileAccessNote extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppConstants.cream,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppConstants.border),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.info_outline,
-            color: AppConstants.woodBrown,
-            size: 18,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Profil dokumanina erisim sinirli. Bu ekranda su an giris hesabindaki temel bilgiler gosteriliyor.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppConstants.deepGreen,
-                height: 1.35,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return const AppInfoBanner(
+      icon: Icons.info_outline,
+      message:
+          'Profil dokumanina erisim sinirli. Bu ekranda su an giris hesabindaki temel bilgiler gosteriliyor.',
     );
   }
 }
@@ -281,115 +258,62 @@ class _ProfileHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppConstants.deepGreen,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppConstants.woodBrown, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: AppConstants.deepGreen.withValues(alpha: 0.18),
-            blurRadius: 20,
-            offset: const Offset(0, 14),
+    return AppHeroSection(
+      title: profile.displayName,
+      subtitle: profile.email,
+      leading: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: AppConstants.amber,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          _initials(profile.displayName),
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            color: AppConstants.deepGreen,
+            fontWeight: FontWeight.w900,
           ),
-        ],
+        ),
       ),
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      badge: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+        decoration: BoxDecoration(
+          color: AppConstants.userModeColor(
+            profile.userMode,
+          ).withValues(alpha: 0.18),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              AppConstants.userModeIcon(profile.userMode),
+              size: 15,
+              color: AppConstants.amber,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              AppConstants.userModeLabel(profile.userMode),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+      ),
+      footer: Wrap(
+        spacing: 8,
+        runSpacing: 8,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 64,
-                height: 64,
-                decoration: BoxDecoration(
-                  color: AppConstants.amber,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                alignment: Alignment.center,
-                child: Text(
-                  _initials(profile.displayName),
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: AppConstants.deepGreen,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      profile.displayName,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      profile.email,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.78),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 7,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppConstants.userModeColor(
-                          profile.userMode,
-                        ).withValues(alpha: 0.18),
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            AppConstants.userModeIcon(profile.userMode),
-                            size: 15,
-                            color: AppConstants.amber,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            AppConstants.userModeLabel(profile.userMode),
-                            style: Theme.of(context).textTheme.labelMedium
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          _HeroTag(icon: Icons.forest_outlined, text: '$listingCount ilan'),
+          const _HeroTag(
+            icon: Icons.storefront_outlined,
+            text: 'Orman Pazar saticisi',
           ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _HeroTag(icon: Icons.forest_outlined, text: '$listingCount ilan'),
-              const _HeroTag(
-                icon: Icons.storefront_outlined,
-                text: 'Orman Pazar saticisi',
-              ),
-              const _HeroTag(
-                icon: Icons.shield_outlined,
-                text: 'Hesap baglandi',
-              ),
-            ],
-          ),
+          const _HeroTag(icon: Icons.shield_outlined, text: 'Hesap baglandi'),
         ],
       ),
     );
@@ -514,45 +438,7 @@ class _ProfileStatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppConstants.cardBackground,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppConstants.border),
-        boxShadow: [
-          BoxShadow(
-            color: AppConstants.deepGreen.withValues(alpha: 0.05),
-            blurRadius: 14,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: AppConstants.forestGreen, size: 18),
-          const SizedBox(height: 10),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppConstants.deepGreen,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: AppConstants.mutedText,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-      ),
-    );
+    return AppMetricTile(icon: icon, label: label, value: value);
   }
 }
 
@@ -569,34 +455,13 @@ class _ProfilePanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppConstants.cardBackground,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppConstants.border),
-      ),
-      padding: const EdgeInsets.all(16),
+    return AppSectionCard(
+      title: title,
+      subtitle: subtitle,
+      icon: Icons.dashboard_outlined,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppConstants.deepGreen,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppConstants.mutedText,
-              height: 1.3,
-            ),
-          ),
-          const SizedBox(height: 14),
-          ...children,
-        ],
+        children: children,
       ),
     );
   }

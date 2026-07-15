@@ -6,6 +6,7 @@ import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
 import '../services/user_service.dart';
+import '../widgets/app_surfaces.dart';
 import '../widgets/listing_card.dart';
 import 'listing_detail_screen.dart';
 import 'login_screen.dart';
@@ -189,66 +190,25 @@ class _MyListingsHero extends StatelessWidget {
         .where((listing) => listing.status == AppConstants.soldStatus)
         .length;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppConstants.deepGreen,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppConstants.woodBrown, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: AppConstants.deepGreen.withValues(alpha: 0.18),
-            blurRadius: 20,
-            offset: const Offset(0, 14),
-          ),
-        ],
+    return AppHeroSection(
+      title: name,
+      subtitle: email.isEmpty ? 'Ilanlarini buradan yonetebilirsin.' : email,
+      leading: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          color: AppConstants.amber,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(
+          Icons.inventory_2_outlined,
+          color: AppConstants.deepGreen,
+          size: 28,
+        ),
       ),
-      padding: const EdgeInsets.all(18),
-      child: Column(
+      footer: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: AppConstants.amber,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.inventory_2_outlined,
-                  color: AppConstants.deepGreen,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      email.isEmpty
-                          ? 'Ilanlarini buradan yonetebilirsin.'
-                          : email,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.78),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
           GridView.count(
             crossAxisCount: 2,
             crossAxisSpacing: 10,
@@ -327,57 +287,14 @@ class _SellerDashboard extends StatelessWidget {
       ...AppConstants.listingStatuses,
     ];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppConstants.cardBackground,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppConstants.border),
-      ),
-      padding: const EdgeInsets.all(16),
+    return AppSectionCard(
+      icon: Icons.analytics_outlined,
+      title: 'Satici paneli',
+      subtitle:
+          'Ilan durumlarini izle, portfoyunu ozetle ve listeyi hizli filtrele.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppConstants.mossGreen,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.analytics_outlined,
-                  color: AppConstants.forestGreen,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Satici paneli',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppConstants.deepGreen,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Ilan durumlarini izle, portfoyunu ozetle ve listeyi hizli filtrele.',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppConstants.mutedText,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 14),
           Row(
             children: [
               Expanded(
@@ -496,50 +413,13 @@ class _SummaryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 18),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppConstants.deepGreen,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            caption,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppConstants.mutedText,
-              height: 1.3,
-            ),
-          ),
-        ],
-      ),
+    return AppMetricTile(
+      label: label,
+      value: value,
+      caption: caption,
+      color: color,
+      icon: icon,
+      compact: true,
     );
   }
 }
@@ -601,34 +481,10 @@ class _ProfileAccessHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppConstants.cream,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppConstants.border),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(
-            Icons.info_outline,
-            color: AppConstants.woodBrown,
-            size: 18,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              'Profil dokumanina erisim sinirli oldugu icin ust alanda temel hesap verisi kullaniliyor.',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppConstants.deepGreen,
-                height: 1.35,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
+    return const AppInfoBanner(
+      icon: Icons.info_outline,
+      message:
+          'Profil dokumanina erisim sinirli oldugu icin ust alanda temel hesap verisi kullaniliyor.',
     );
   }
 }
@@ -644,53 +500,15 @@ class _EmptyFilteredState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppConstants.cardBackground,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppConstants.border),
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: AppConstants.mossGreen,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: const Icon(
-              Icons.filter_alt_off_outlined,
-              color: AppConstants.forestGreen,
-              size: 30,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            '$selectedStatus durumunda ilan bulunamadi',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: AppConstants.deepGreen,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Baska bir durum secerek ya da tum ilanlara donerek listeyi tekrar inceleyebilirsin.',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: AppConstants.mutedText,
-              height: 1.35,
-            ),
-          ),
-          const SizedBox(height: 14),
-          OutlinedButton.icon(
-            onPressed: onReset,
-            icon: const Icon(Icons.refresh_outlined),
-            label: const Text('Tum ilanlari goster'),
-          ),
-        ],
+    return AppEmptyStateCard(
+      icon: Icons.filter_alt_off_outlined,
+      title: '$selectedStatus durumunda ilan bulunamadi',
+      message:
+          'Baska bir durum secerek ya da tum ilanlara donerek listeyi tekrar inceleyebilirsin.',
+      action: OutlinedButton.icon(
+        onPressed: onReset,
+        icon: const Icon(Icons.refresh_outlined),
+        label: const Text('Tum ilanlari goster'),
       ),
     );
   }
@@ -717,46 +535,11 @@ class _StateMessage extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       children: [
         if (header != null) ...[header!, const SizedBox(height: 28)],
-        Container(
-          decoration: BoxDecoration(
-            color: AppConstants.cardBackground,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppConstants.border),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 74,
-                height: 74,
-                decoration: BoxDecoration(
-                  color: AppConstants.mossGreen,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(icon, size: 34, color: AppConstants.forestGreen),
-              ),
-              const SizedBox(height: 14),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: AppConstants.deepGreen,
-                  fontWeight: FontWeight.w900,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppConstants.mutedText,
-                  height: 1.35,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              if (action != null) ...[const SizedBox(height: 18), action!],
-            ],
-          ),
+        AppEmptyStateCard(
+          icon: icon,
+          title: title,
+          message: message,
+          action: action,
         ),
       ],
     );

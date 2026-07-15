@@ -154,6 +154,26 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
       return;
     }
 
+    final existingReport = await _reportService.getUserReportForListing(
+      listingId: widget.listing.id,
+      reporterId: user.uid,
+    );
+
+    if (existingReport != null) {
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Bu ilan icin zaten bir rapor biraktin')),
+      );
+      return;
+    }
+
+    if (!mounted) {
+      return;
+    }
+
     final result = await showDialog<_ReportFormResult>(
       context: context,
       builder: (dialogContext) {
@@ -218,184 +238,208 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
           builder: (context, sellerSnapshot) {
             final sellerProfile = sellerSnapshot.data;
 
-            return StreamBuilder<List<ListingModel>>(
-              stream: _listingService.getListingsBySeller(
-                widget.listing.sellerId,
-              ),
-              builder: (context, sellerListingsSnapshot) {
-                final sellerListings =
-                    sellerListingsSnapshot.data ?? const <ListingModel>[];
+            return StreamBuilder<ReportModel?>(
+              stream: user == null
+                  ? Stream<ReportModel?>.value(null)
+                  : _reportService.watchUserReportForListing(
+                      listingId: widget.listing.id,
+                      reporterId: user.uid,
+                    ),
+              builder: (context, reportSnapshot) {
+                final existingReport = reportSnapshot.data;
 
-                return Scaffold(
-                  appBar: AppBar(
-                    title: const Text('Ilan detayi'),
-                    actions: [
-                      IconButton(
-                        tooltip: isFavorite
-                            ? 'Favoriden cikar'
-                            : 'Favorilere ekle',
-                        onPressed: () =>
-                            _toggleFavorite(isFavorite: isFavorite),
-                        icon: Icon(
-                          isFavorite ? Icons.favorite : Icons.favorite_border,
-                        ),
-                      ),
-                      if (isOwner)
-                        PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              _openEditScreen(context);
-                            }
-                            if (value == 'delete') {
-                              _deleteListing(context);
-                            }
-                          },
-                          itemBuilder: (context) => const [
-                            PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit_outlined),
-                                  SizedBox(width: 8),
-                                  Text('Duzenle'),
-                                ],
-                              ),
+                return StreamBuilder<List<ListingModel>>(
+                  stream: _listingService.getListingsBySeller(
+                    widget.listing.sellerId,
+                  ),
+                  builder: (context, sellerListingsSnapshot) {
+                    final sellerListings =
+                        sellerListingsSnapshot.data ?? const <ListingModel>[];
+
+                    return Scaffold(
+                      appBar: AppBar(
+                        title: const Text('Ilan detayi'),
+                        actions: [
+                          IconButton(
+                            tooltip: isFavorite
+                                ? 'Favoriden cikar'
+                                : 'Favorilere ekle',
+                            onPressed: () =>
+                                _toggleFavorite(isFavorite: isFavorite),
+                            icon: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
                             ),
-                            PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete_outline,
-                                    color: Colors.redAccent,
+                          ),
+                          if (isOwner)
+                            PopupMenuButton<String>(
+                              onSelected: (value) {
+                                if (value == 'edit') {
+                                  _openEditScreen(context);
+                                }
+                                if (value == 'delete') {
+                                  _deleteListing(context);
+                                }
+                              },
+                              itemBuilder: (context) => const [
+                                PopupMenuItem(
+                                  value: 'edit',
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.edit_outlined),
+                                      SizedBox(width: 8),
+                                      Text('Duzenle'),
+                                    ],
                                   ),
-                                  SizedBox(width: 8),
-                                  Text('Sil'),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                  body: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
-                    children: [
-                      _ImageGalleryPanel(
-                        imageUrls: widget.listing.imageUrls,
-                        onOpenImage: (index) {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ImageGalleryScreen(
-                                imageUrls: widget.listing.imageUrls,
-                                initialIndex: index,
-                                title: widget.listing.title,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 14),
-                      _DetailHero(
-                        listing: widget.listing,
-                        isOwner: isOwner,
-                        isFavorite: isFavorite,
-                      ),
-                      const SizedBox(height: 14),
-                      _ContactPanel(
-                        listing: widget.listing,
-                        onOpenSellerProfile: () => _openSellerProfile(context),
-                        onReportListing: _openReportDialog,
-                        isOwner: isOwner,
-                      ),
-                      const SizedBox(height: 14),
-                      _TrustPanel(
-                        listing: widget.listing,
-                        sellerProfile: sellerProfile,
-                        sellerListings: sellerListings,
-                        onOpenSellerProfile: () => _openSellerProfile(context),
-                      ),
-                      const SizedBox(height: 14),
-                      _InfoPanel(
-                        title: 'Ilan bilgileri',
-                        subtitle:
-                            'Urunun temel ozellikleri ve satis ayrintilari.',
-                        children: [
-                          _DetailRow(
-                            icon: Icons.favorite_outline,
-                            label: 'Favori durumu',
-                            value: isFavorite ? 'Kaydedildi' : 'Kayitli degil',
-                            valueColor: isFavorite ? AppConstants.clay : null,
-                          ),
-                          _DetailRow(
-                            icon: Icons.bolt_outlined,
-                            label: 'Durum',
-                            value: widget.listing.status,
-                            valueColor: AppConstants.listingStatusColor(
-                              widget.listing.status,
-                            ),
-                          ),
-                          _DetailRow(
-                            icon: Icons.person_outline,
-                            label: 'Satici',
-                            value: widget.listing.sellerName.isEmpty
-                                ? 'Kullanici'
-                                : widget.listing.sellerName,
-                            onTap: () => _openSellerProfile(context),
-                          ),
-                          _DetailRow(
-                            icon: Icons.schedule_outlined,
-                            label: 'Yayin zamani',
-                            value: _formatRelativeDate(
-                              widget.listing.createdAt,
-                            ),
-                          ),
-                          _DetailRow(
-                            icon: Icons.park_outlined,
-                            label: 'Agac turu',
-                            value: widget.listing.woodType,
-                          ),
-                          _DetailRow(
-                            icon: Icons.water_drop_outlined,
-                            label: 'Nem durumu',
-                            value: widget.listing.moistureStatus,
-                          ),
-                          _DetailRow(
-                            icon: Icons.local_shipping_outlined,
-                            label: 'Nakliye',
-                            value: widget.listing.hasDelivery ? 'Var' : 'Yok',
-                          ),
-                          _DetailRow(
-                            icon: Icons.sell_outlined,
-                            label: 'Kategori',
-                            value: widget.listing.category,
-                          ),
-                          _DetailRow(
-                            icon: Icons.scale_outlined,
-                            label: 'Olcu',
-                            value:
-                                '${_formatNumber(widget.listing.amount)} ${widget.listing.unit}',
-                            isLast: true,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 14),
-                      _InfoPanel(
-                        title: 'Aciklama',
-                        subtitle: 'Saticinin urun icin ekledigi notlar.',
-                        children: [
-                          Text(
-                            widget.listing.description,
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(
-                                  color: AppConstants.deepGreen,
-                                  height: 1.45,
                                 ),
+                                PopupMenuItem(
+                                  value: 'delete',
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.delete_outline,
+                                        color: Colors.redAccent,
+                                      ),
+                                      SizedBox(width: 8),
+                                      Text('Sil'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                      body: ListView(
+                        padding: const EdgeInsets.fromLTRB(16, 16, 16, 28),
+                        children: [
+                          _ImageGalleryPanel(
+                            imageUrls: widget.listing.imageUrls,
+                            onOpenImage: (index) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ImageGalleryScreen(
+                                    imageUrls: widget.listing.imageUrls,
+                                    initialIndex: index,
+                                    title: widget.listing.title,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                          _DetailHero(
+                            listing: widget.listing,
+                            isOwner: isOwner,
+                            isFavorite: isFavorite,
+                          ),
+                          const SizedBox(height: 14),
+                          _ContactPanel(
+                            listing: widget.listing,
+                            onOpenSellerProfile: () =>
+                                _openSellerProfile(context),
+                            onReportListing: _openReportDialog,
+                            isOwner: isOwner,
+                            existingReport: existingReport,
+                            isLoggedIn: user != null,
+                          ),
+                          const SizedBox(height: 14),
+                          _TrustPanel(
+                            listing: widget.listing,
+                            sellerProfile: sellerProfile,
+                            sellerListings: sellerListings,
+                            onOpenSellerProfile: () =>
+                                _openSellerProfile(context),
+                          ),
+                          const SizedBox(height: 14),
+                          _InfoPanel(
+                            title: 'Ilan bilgileri',
+                            subtitle:
+                                'Urunun temel ozellikleri ve satis ayrintilari.',
+                            children: [
+                              _DetailRow(
+                                icon: Icons.favorite_outline,
+                                label: 'Favori durumu',
+                                value: isFavorite
+                                    ? 'Kaydedildi'
+                                    : 'Kayitli degil',
+                                valueColor: isFavorite
+                                    ? AppConstants.clay
+                                    : null,
+                              ),
+                              _DetailRow(
+                                icon: Icons.bolt_outlined,
+                                label: 'Durum',
+                                value: widget.listing.status,
+                                valueColor: AppConstants.listingStatusColor(
+                                  widget.listing.status,
+                                ),
+                              ),
+                              _DetailRow(
+                                icon: Icons.person_outline,
+                                label: 'Satici',
+                                value: widget.listing.sellerName.isEmpty
+                                    ? 'Kullanici'
+                                    : widget.listing.sellerName,
+                                onTap: () => _openSellerProfile(context),
+                              ),
+                              _DetailRow(
+                                icon: Icons.schedule_outlined,
+                                label: 'Yayin zamani',
+                                value: _formatRelativeDate(
+                                  widget.listing.createdAt,
+                                ),
+                              ),
+                              _DetailRow(
+                                icon: Icons.park_outlined,
+                                label: 'Agac turu',
+                                value: widget.listing.woodType,
+                              ),
+                              _DetailRow(
+                                icon: Icons.water_drop_outlined,
+                                label: 'Nem durumu',
+                                value: widget.listing.moistureStatus,
+                              ),
+                              _DetailRow(
+                                icon: Icons.local_shipping_outlined,
+                                label: 'Nakliye',
+                                value: widget.listing.hasDelivery
+                                    ? 'Var'
+                                    : 'Yok',
+                              ),
+                              _DetailRow(
+                                icon: Icons.sell_outlined,
+                                label: 'Kategori',
+                                value: widget.listing.category,
+                              ),
+                              _DetailRow(
+                                icon: Icons.scale_outlined,
+                                label: 'Olcu',
+                                value:
+                                    '${_formatNumber(widget.listing.amount)} ${widget.listing.unit}',
+                                isLast: true,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          _InfoPanel(
+                            title: 'Aciklama',
+                            subtitle: 'Saticinin urun icin ekledigi notlar.',
+                            children: [
+                              Text(
+                                widget.listing.description,
+                                style: Theme.of(context).textTheme.bodyLarge
+                                    ?.copyWith(
+                                      color: AppConstants.deepGreen,
+                                      height: 1.45,
+                                    ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 );
               },
             );
@@ -1154,12 +1198,16 @@ class _ContactPanel extends StatelessWidget {
     required this.onOpenSellerProfile,
     required this.onReportListing,
     required this.isOwner,
+    required this.existingReport,
+    required this.isLoggedIn,
   });
 
   final ListingModel listing;
   final VoidCallback onOpenSellerProfile;
   final VoidCallback onReportListing;
   final bool isOwner;
+  final ReportModel? existingReport;
+  final bool isLoggedIn;
 
   @override
   Widget build(BuildContext context) {
@@ -1214,17 +1262,49 @@ class _ContactPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          OutlinedButton.icon(
-            onPressed: onOpenSellerProfile,
-            icon: const Icon(Icons.storefront_outlined),
-            label: const Text('Saticinin diger ilanlari'),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onOpenSellerProfile,
+                  icon: const Icon(Icons.storefront_outlined),
+                  label: const Text('Satici profili'),
+                ),
+              ),
+              if (!isOwner) ...[
+                const SizedBox(width: 10),
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: existingReport == null ? onReportListing : null,
+                    icon: Icon(
+                      existingReport == null
+                          ? Icons.flag_outlined
+                          : Icons.check_circle_outline,
+                    ),
+                    label: Text(
+                      existingReport == null ? 'Rapor et' : 'Raporlandi',
+                    ),
+                  ),
+                ),
+              ],
+            ],
           ),
-          if (!isOwner) ...[
-            const SizedBox(height: 10),
-            OutlinedButton.icon(
-              onPressed: onReportListing,
-              icon: const Icon(Icons.flag_outlined),
-              label: const Text('Ilani rapor et'),
+          if (!isOwner && existingReport != null) ...[
+            const SizedBox(height: 12),
+            _ReportStatusBanner(report: existingReport!),
+          ] else if (!isOwner && !isLoggedIn) ...[
+            const SizedBox(height: 12),
+            const _ReportHintBanner(
+              icon: Icons.login_outlined,
+              text: 'Rapor birakmak icin once giris yapman gerekiyor.',
+            ),
+          ] else if (!isOwner) ...[
+            const SizedBox(height: 12),
+            const _ReportHintBanner(
+              icon: Icons.shield_outlined,
+              text:
+                  'Supheli ya da uygunsuz bir durum varsa ilanı moderasyona iletebilirsin.',
             ),
           ],
           if (listing.status != AppConstants.activeStatus) ...[
@@ -1259,6 +1339,104 @@ class _ContactPanel extends StatelessWidget {
               ),
             ),
           ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ReportStatusBanner extends StatelessWidget {
+  const _ReportStatusBanner({required this.report});
+
+  final ReportModel report;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppConstants.clay.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.clay.withValues(alpha: 0.18)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.flag_outlined,
+                color: AppConstants.clay,
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Bu ilan icin daha once rapor biraktin',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppConstants.deepGreen,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Neden: ${report.reason}',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppConstants.deepGreen,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (report.note.trim().isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              report.note,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppConstants.mutedText,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _ReportHintBanner extends StatelessWidget {
+  const _ReportHintBanner({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppConstants.cream,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.border),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: AppConstants.woodBrown, size: 18),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppConstants.deepGreen,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ],
       ),
     );

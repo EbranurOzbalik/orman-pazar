@@ -171,6 +171,13 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - Kullanıcılar seçili neden ve ek not ile rapor bırakabilir hale geldi.
 - Kullanıcının kendi ilanını raporlaması engellendi.
 
+### Gün 19 - Raporlama iyileştirmeleri
+
+- Aynı kullanıcının aynı ilanı ikinci kez raporlaması engellendi.
+- Kullanıcının bıraktığı mevcut rapor Firestore üzerinden izlenebilir hale geldi.
+- İlan detayında rapor durumu için daha belirgin ve modern bir durum alanı eklendi.
+- Rapor butonu daha güçlü bir aksiyon düzenine taşındı.
+
 ## Proje Yapısı
 
 ```text

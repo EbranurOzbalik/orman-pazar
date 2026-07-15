@@ -7,6 +7,7 @@ class AppUserModel {
     required this.email,
     required this.phone,
     required this.createdAt,
+    this.userMode = 'buyer_seller',
     this.profileCompleted = false,
     this.trustScore = 0,
     this.favoriteListingIds = const [],
@@ -17,6 +18,7 @@ class AppUserModel {
   final String email;
   final String phone;
   final DateTime createdAt;
+  final String userMode;
   final bool profileCompleted;
   final int trustScore;
   final List<String> favoriteListingIds;
@@ -39,6 +41,7 @@ class AppUserModel {
       'name': name,
       'email': email,
       'phone': phone,
+      'userMode': userMode,
       'profileCompleted': profileCompleted,
       'trustScore': trustScore,
       'favoriteListingIds': favoriteListingIds,
@@ -52,6 +55,7 @@ class AppUserModel {
       name: map['name'] as String? ?? '',
       email: map['email'] as String? ?? '',
       phone: map['phone'] as String? ?? '',
+      userMode: map['userMode'] as String? ?? 'buyer_seller',
       profileCompleted: map['profileCompleted'] as bool? ?? false,
       trustScore: _toInt(map['trustScore']),
       favoriteListingIds: _toStringList(map['favoriteListingIds']),

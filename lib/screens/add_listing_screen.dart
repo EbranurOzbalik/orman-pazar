@@ -107,6 +107,21 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
     try {
       final profile = await _userService.getUserById(user.uid);
+      if (profile != null && profile.userMode == AppConstants.buyerMode) {
+        if (!mounted) {
+          return;
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Ilan eklemek icin hesap modunu Satici ya da Alici ve Satici yapmalisin',
+            ),
+          ),
+        );
+        return;
+      }
+
       final sellerName = _resolveSellerName(
         userEmail: user.email,
         profile: profile,

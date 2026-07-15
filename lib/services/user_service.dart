@@ -22,6 +22,7 @@ class UserService {
     required String email,
     String name = '',
     String phone = '',
+    String userMode = AppConstants.buyerSellerMode,
   }) async {
     final existingUser = await getUserById(id);
 
@@ -35,12 +36,16 @@ class UserService {
       final resolvedPhone = existingUser.phone.trim().isNotEmpty
           ? existingUser.phone
           : phone;
+      final resolvedUserMode = existingUser.userMode.trim().isNotEmpty
+          ? existingUser.userMode
+          : userMode;
 
       final mergedUser = AppUserModel(
         id: existingUser.id,
         name: resolvedName,
         email: resolvedEmail,
         phone: resolvedPhone,
+        userMode: resolvedUserMode,
         profileCompleted: _isProfileCompleted(
           name: resolvedName,
           email: resolvedEmail,
@@ -64,6 +69,7 @@ class UserService {
       name: name,
       email: email,
       phone: phone,
+      userMode: userMode,
       profileCompleted: _isProfileCompleted(
         name: name,
         email: email,
@@ -84,6 +90,7 @@ class UserService {
       email: user.email,
       phone: user.phone,
       createdAt: user.createdAt,
+      userMode: user.userMode,
       profileCompleted: _isProfileCompleted(
         name: user.name,
         email: user.email,

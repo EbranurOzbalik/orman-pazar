@@ -46,6 +46,7 @@ class ProfileScreen extends StatelessWidget {
                 email: user.email ?? '',
                 phone: '',
                 createdAt: DateTime.now(),
+                userMode: AppConstants.buyerSellerMode,
                 profileCompleted: false,
                 trustScore: 0,
               );
@@ -100,8 +101,8 @@ class ProfileScreen extends StatelessWidget {
                       Expanded(
                         child: _ProfileStatCard(
                           icon: Icons.calendar_month_outlined,
-                          label: 'Uyelik',
-                          value: _formatDate(profile.createdAt),
+                          label: 'Mod',
+                          value: AppConstants.userModeLabel(profile.userMode),
                         ),
                       ),
                     ],
@@ -125,6 +126,11 @@ class ProfileScreen extends StatelessWidget {
                         icon: Icons.phone_outlined,
                         label: 'Telefon',
                         value: profile.phone.isEmpty ? '-' : profile.phone,
+                      ),
+                      _ProfileInfoTile(
+                        icon: AppConstants.userModeIcon(profile.userMode),
+                        label: 'Hesap modu',
+                        value: AppConstants.userModeLabel(profile.userMode),
                       ),
                       _ProfileInfoTile(
                         icon: Icons.verified_user_outlined,
@@ -157,6 +163,12 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 14),
+                  _ProfilePanel(
+                    title: 'Mod aciklamasi',
+                    subtitle: 'Hesabin uygulamada nasil davrandigini gosterir.',
+                    children: [_ModeSummaryCard(mode: profile.userMode)],
+                  ),
                 ],
               );
             },
@@ -164,12 +176,6 @@ class ProfileScreen extends StatelessWidget {
         },
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    return '$day.$month.${date.year}';
   }
 }
 
@@ -331,6 +337,38 @@ class _ProfileHero extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppConstants.userModeColor(
+                          profile.userMode,
+                        ).withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            AppConstants.userModeIcon(profile.userMode),
+                            size: 15,
+                            color: AppConstants.amber,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            AppConstants.userModeLabel(profile.userMode),
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -370,6 +408,63 @@ class _ProfileHero extends StatelessWidget {
     }
 
     return parts.map((part) => part.substring(0, 1).toUpperCase()).join();
+  }
+}
+
+class _ModeSummaryCard extends StatelessWidget {
+  const _ModeSummaryCard({required this.mode});
+
+  final String mode;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = AppConstants.userModeColor(mode);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(AppConstants.userModeIcon(mode), color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppConstants.userModeLabel(mode),
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: AppConstants.deepGreen,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  AppConstants.userModeDescription(mode),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppConstants.mutedText,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -12,6 +12,9 @@ class AppConstants {
   static const String allCategories = 'Tumu';
   static const String allStatuses = 'Tum durumlar';
   static const String allWoodTypes = 'Tum agac turleri';
+  static const String buyerMode = 'buyer';
+  static const String sellerMode = 'seller';
+  static const String buyerSellerMode = 'buyer_seller';
   static const String activeStatus = 'Aktif';
   static const String reservedStatus = 'Rezerve';
   static const String soldStatus = 'Satildi';
@@ -50,6 +53,12 @@ class AppConstants {
     'Diger',
   ];
 
+  static const List<String> userModes = [
+    buyerMode,
+    sellerMode,
+    buyerSellerMode,
+  ];
+
   static const Color forestGreen = Color(0xFF244E34);
   static const Color deepGreen = Color(0xFF163323);
   static const Color leafGreen = Color(0xFF5D8B4E);
@@ -84,6 +93,54 @@ class AppConstants {
       case activeStatus:
       default:
         return leafGreen;
+    }
+  }
+
+  static String userModeLabel(String mode) {
+    switch (mode) {
+      case buyerMode:
+        return 'Alici';
+      case sellerMode:
+        return 'Satici';
+      case buyerSellerMode:
+      default:
+        return 'Alici ve Satici';
+    }
+  }
+
+  static String userModeDescription(String mode) {
+    switch (mode) {
+      case buyerMode:
+        return 'Ilanlari incele, favorilere ekle ve saticilarla iletisime gec.';
+      case sellerMode:
+        return 'Ilan ekle, urunlerini yonet ve satis panelini kullan.';
+      case buyerSellerMode:
+      default:
+        return 'Hem ilan ara hem de kendi urunlerini listele.';
+    }
+  }
+
+  static IconData userModeIcon(String mode) {
+    switch (mode) {
+      case buyerMode:
+        return Icons.shopping_bag_outlined;
+      case sellerMode:
+        return Icons.storefront_outlined;
+      case buyerSellerMode:
+      default:
+        return Icons.swap_horiz_outlined;
+    }
+  }
+
+  static Color userModeColor(String mode) {
+    switch (mode) {
+      case buyerMode:
+        return clay;
+      case sellerMode:
+        return leafGreen;
+      case buyerSellerMode:
+      default:
+        return amber;
     }
   }
 }

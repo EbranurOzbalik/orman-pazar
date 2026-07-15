@@ -22,6 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final UserService _userService = UserService();
 
   bool _isLoading = false;
+  String _selectedUserMode = AppConstants.buyerSellerMode;
 
   @override
   void dispose() {
@@ -56,6 +57,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         name: _nameController.text.trim(),
         email: user.email ?? _emailController.text.trim(),
         phone: _phoneController.text.trim(),
+        userMode: _selectedUserMode,
       );
 
       if (!mounted) {
@@ -150,6 +152,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 14),
               _AuthPanel(
                 children: [
+                  _ModeSelectorSection(
+                    selectedMode: _selectedUserMode,
+                    onChanged: (mode) {
+                      setState(() => _selectedUserMode = mode);
+                    },
+                  ),
+                  const SizedBox(height: 14),
                   TextFormField(
                     controller: _nameController,
                     textCapitalization: TextCapitalization.words,
@@ -305,6 +314,111 @@ class _AuthPanel extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(16),
       child: Column(children: children),
+    );
+  }
+}
+
+class _ModeSelectorSection extends StatelessWidget {
+  const _ModeSelectorSection({
+    required this.selectedMode,
+    required this.onChanged,
+  });
+
+  final String selectedMode;
+  final ValueChanged<String> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Hesap modu',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: AppConstants.deepGreen,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Column(
+          children: AppConstants.userModes.map((mode) {
+            final isSelected = mode == selectedMode;
+            final color = AppConstants.userModeColor(mode);
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: () => onChanged(mode),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? color.withValues(alpha: 0.12)
+                        : AppConstants.cream,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected ? color : AppConstants.border,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? color.withValues(alpha: 0.18)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          AppConstants.userModeIcon(mode),
+                          color: color,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppConstants.userModeLabel(mode),
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    color: AppConstants.deepGreen,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              AppConstants.userModeDescription(mode),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: AppConstants.mutedText,
+                                    height: 1.3,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        isSelected
+                            ? Icons.radio_button_checked
+                            : Icons.radio_button_off,
+                        color: isSelected ? color : AppConstants.mutedText,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

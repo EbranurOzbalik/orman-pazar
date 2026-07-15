@@ -178,6 +178,15 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - İlan detayında rapor durumu için daha belirgin ve modern bir durum alanı eklendi.
 - Rapor butonu daha güçlü bir aksiyon düzenine taşındı.
 
+### Gün 20 - Kullanıcı modları
+
+- Kullanıcı profiline `Alici`, `Satici`, `Alici ve Satici` modları eklendi.
+- Kayıt ekranında hesap modu seçilebilir hale getirildi.
+- Profil düzenleme ekranına mod değiştirme alanı eklendi.
+- Profil ekranı seçilen modu daha görünür bir kart ve rozet yapısıyla göstermeye başladı.
+- Giriş ekranı modları daha iyi anlatan bir önizleme alanı kazandı.
+- `Alici` modundaki kullanıcıların ilan eklemesi engellendi.
+
 ## Proje Yapısı
 
 ```text

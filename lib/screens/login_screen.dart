@@ -108,6 +108,8 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 14),
               _AuthPanel(
                 children: [
+                  const _LoginModePreview(),
+                  const SizedBox(height: 14),
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -244,6 +246,52 @@ class _AuthPanel extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(16),
       child: Column(children: children),
+    );
+  }
+}
+
+class _LoginModePreview extends StatelessWidget {
+  const _LoginModePreview();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppConstants.cream,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.border),
+      ),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: AppConstants.userModes.map((mode) {
+          final color = AppConstants.userModeColor(mode);
+
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(AppConstants.userModeIcon(mode), size: 15, color: color),
+                const SizedBox(width: 6),
+                Text(
+                  AppConstants.userModeLabel(mode),
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }).toList(),
+      ),
     );
   }
 }

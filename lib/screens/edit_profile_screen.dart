@@ -19,6 +19,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   late final TextEditingController _nameController;
   late final TextEditingController _phoneController;
+  late String _selectedUserMode;
   bool _isSaving = false;
 
   @override
@@ -26,6 +27,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.profile.name);
     _phoneController = TextEditingController(text: widget.profile.phone);
+    _selectedUserMode = widget.profile.userMode;
   }
 
   @override
@@ -48,6 +50,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       email: widget.profile.email,
       phone: _phoneController.text.trim(),
       createdAt: widget.profile.createdAt,
+      userMode: _selectedUserMode,
       favoriteListingIds: widget.profile.favoriteListingIds,
       profileCompleted: widget.profile.profileCompleted,
       trustScore: widget.profile.trustScore,
@@ -176,6 +179,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         prefixIcon: Icon(Icons.phone_outlined),
                       ),
                       validator: _phoneValidator,
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<String>(
+                      initialValue: _selectedUserMode,
+                      decoration: const InputDecoration(
+                        labelText: 'Hesap modu',
+                        prefixIcon: Icon(Icons.tune_outlined),
+                      ),
+                      items: AppConstants.userModes.map((mode) {
+                        return DropdownMenuItem<String>(
+                          value: mode,
+                          child: Text(AppConstants.userModeLabel(mode)),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _selectedUserMode = value);
+                        }
+                      },
                     ),
                     const SizedBox(height: 22),
                     SizedBox(

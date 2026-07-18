@@ -4,10 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/app_constants.dart';
+import '../models/app_user_model.dart';
 import '../models/listing_model.dart';
 import '../services/auth_service.dart';
 import '../services/listing_service.dart';
 import '../services/user_service.dart';
+import '../widgets/app_surfaces.dart';
 import '../widgets/listing_card.dart';
 import 'add_listing_screen.dart';
 import 'favorites_screen.dart';
@@ -249,170 +251,212 @@ class _HomeScreenState extends State<HomeScreen> {
     ).showSnackBar(const SnackBar(content: Text('Cikis yapildi')));
   }
 
+  void _openFavorites(User? user) {
+    if (user == null) {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => FavoritesScreen()));
+  }
+
+  void _openProfile(User? user) {
+    if (user == null) {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => ProfileScreen()));
+  }
+
+  void _openMyListings(User? user) {
+    if (user == null) {
+      Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      return;
+    }
+
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const MyListingsScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
       stream: _authService.authStateChanges,
       builder: (context, authSnapshot) {
         final user = authSnapshot.data;
-
-        return StreamBuilder<Set<String>>(
+        return StreamBuilder<AppUserModel?>(
           stream: user == null
-              ? Stream<Set<String>>.value(<String>{})
-              : _userService.watchFavoriteIds(user.uid),
-          builder: (context, favoritesSnapshot) {
-            final favoriteIds = favoritesSnapshot.data ?? <String>{};
+              ? Stream<AppUserModel?>.value(null)
+              : _userService.watchUserById(user.uid),
+          builder: (context, profileSnapshot) {
+            final profile = profileSnapshot.data;
 
-            return Scaffold(
-              appBar: AppBar(
-                title: const Text(AppConstants.appName),
-                actions: [
-                  if (user == null)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: TextButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const LoginScreen(),
+            return StreamBuilder<Set<String>>(
+              stream: user == null
+                  ? Stream<Set<String>>.value(<String>{})
+                  : _userService.watchFavoriteIds(user.uid),
+              builder: (context, favoritesSnapshot) {
+                final favoriteIds = favoritesSnapshot.data ?? <String>{};
+
+                return Scaffold(
+                  appBar: AppBar(
+                    title: const Text(AppConstants.appName),
+                    actions: [
+                      if (user == null)
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: TextButton.icon(
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.login, color: Colors.white),
+                            label: const Text(
+                              'Giris',
+                              style: TextStyle(color: Colors.white),
                             ),
-                          );
-                        },
-                        icon: const Icon(Icons.login, color: Colors.white),
-                        label: const Text(
-                          'Giris',
-                          style: TextStyle(color: Colors.white),
+                          ),
+                        )
+                      else
+                        Row(
+                          children: [
+                            IconButton(
+                              tooltip: 'Favorilerim',
+                              onPressed: () => _openFavorites(user),
+                              icon: const Icon(Icons.favorite_border),
+                            ),
+                            IconButton(
+                              tooltip: 'Profilim',
+                              onPressed: () => _openProfile(user),
+                              icon: const Icon(Icons.account_circle_outlined),
+                            ),
+                            IconButton(
+                              tooltip: 'Benim ilanlarim',
+                              onPressed: () => _openMyListings(user),
+                              icon: const Icon(Icons.inventory_2_outlined),
+                            ),
+                            IconButton(
+                              tooltip: 'Cikis yap',
+                              onPressed: _signOut,
+                              icon: const Icon(Icons.logout),
+                            ),
+                          ],
                         ),
-                      ),
-                    )
-                  else
-                    Row(
-                      children: [
-                        IconButton(
-                          tooltip: 'Favorilerim',
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => FavoritesScreen(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.favorite_border),
-                        ),
-                        IconButton(
-                          tooltip: 'Profilim',
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ProfileScreen(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.account_circle_outlined),
-                        ),
-                        IconButton(
-                          tooltip: 'Benim ilanlarim',
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => MyListingsScreen(),
-                              ),
-                            );
-                          },
-                          icon: const Icon(Icons.inventory_2_outlined),
-                        ),
-                        IconButton(
-                          tooltip: 'Cikis yap',
-                          onPressed: _signOut,
-                          icon: const Icon(Icons.logout),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-              body: StreamBuilder<List<ListingModel>>(
-                stream: _listingService.getListings(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const _LoadingState();
-                  }
-
-                  if (snapshot.hasError) {
-                    return _StateMessage(
-                      icon: Icons.error_outline,
-                      title: 'Ilanlar yuklenemedi',
-                      message: snapshot.error.toString(),
-                    );
-                  }
-
-                  final allListings = snapshot.data ?? [];
-                  final filteredListings = _filterListings(allListings);
-
-                  return Column(
-                    children: [
-                      _SearchAndFilters(
-                        controller: _searchController,
-                        minPriceController: _minPriceController,
-                        maxPriceController: _maxPriceController,
-                        searchFocusNode: _searchFocusNode,
-                        selectedCategory: _selectedCategory,
-                        selectedStatus: _selectedStatus,
-                        selectedWoodType: _selectedWoodType,
-                        deliveryFilter: _deliveryFilter,
-                        sortOption: _sortOption,
-                        listingCount: allListings.length,
-                        visibleCount: filteredListings.length,
-                        activeFilterCount: _activeFilterCount,
-                        onSearchChanged: _queueSearchUpdate,
-                        onCategorySelected: (category) {
-                          setState(() => _selectedCategory = category);
-                        },
-                        onStatusSelected: (status) {
-                          setState(() => _selectedStatus = status);
-                        },
-                        onWoodTypeSelected: (woodType) {
-                          setState(() => _selectedWoodType = woodType);
-                        },
-                        onDeliveryFilterChanged: (value) {
-                          setState(() => _deliveryFilter = value);
-                        },
-                        onSortOptionChanged: (value) {
-                          setState(() => _sortOption = value);
-                        },
-                        onPriceChanged: () => setState(() {}),
-                        onClearAdvancedFilters: _clearAdvancedFilters,
-                      ),
-                      Expanded(
-                        child: _ListingsContent(
-                          listings: filteredListings,
-                          favoriteIds: favoriteIds,
-                          hasAnyListing: allListings.isNotEmpty,
-                          onFavoriteTap: (listing) {
-                            _toggleFavorite(
-                              user: user,
-                              listing: listing,
-                              isFavorite: favoriteIds.contains(listing.id),
-                            );
-                          },
-                          onOpenListing: (listing) {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    ListingDetailScreen(listing: listing),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
                     ],
-                  );
-                },
-              ),
-              floatingActionButton: FloatingActionButton.extended(
-                onPressed: () => _openAddListing(user),
-                icon: const Icon(Icons.add),
-                label: const Text('Ilan ekle'),
-              ),
+                  ),
+                  body: StreamBuilder<List<ListingModel>>(
+                    stream: _listingService.getListings(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const _LoadingState();
+                      }
+
+                      if (snapshot.hasError) {
+                        return _StateMessage(
+                          icon: Icons.error_outline,
+                          title: 'Ilanlar yuklenemedi',
+                          message: snapshot.error.toString(),
+                        );
+                      }
+
+                      final allListings = snapshot.data ?? [];
+                      final filteredListings = _filterListings(allListings);
+
+                      return Column(
+                        children: [
+                          _SearchAndFilters(
+                            controller: _searchController,
+                            minPriceController: _minPriceController,
+                            maxPriceController: _maxPriceController,
+                            searchFocusNode: _searchFocusNode,
+                            selectedCategory: _selectedCategory,
+                            selectedStatus: _selectedStatus,
+                            selectedWoodType: _selectedWoodType,
+                            deliveryFilter: _deliveryFilter,
+                            sortOption: _sortOption,
+                            listingCount: allListings.length,
+                            visibleCount: filteredListings.length,
+                            activeFilterCount: _activeFilterCount,
+                            user: user,
+                            profile: profile,
+                            onSearchChanged: _queueSearchUpdate,
+                            onCategorySelected: (category) {
+                              setState(() => _selectedCategory = category);
+                            },
+                            onStatusSelected: (status) {
+                              setState(() => _selectedStatus = status);
+                            },
+                            onWoodTypeSelected: (woodType) {
+                              setState(() => _selectedWoodType = woodType);
+                            },
+                            onDeliveryFilterChanged: (value) {
+                              setState(() => _deliveryFilter = value);
+                            },
+                            onSortOptionChanged: (value) {
+                              setState(() => _sortOption = value);
+                            },
+                            onPriceChanged: () => setState(() {}),
+                            onClearAdvancedFilters: _clearAdvancedFilters,
+                            onOpenFavorites: () => _openFavorites(user),
+                            onOpenProfile: () => _openProfile(user),
+                            onOpenMyListings: () => _openMyListings(user),
+                            onOpenAddListing: () => _openAddListing(user),
+                            onOpenLogin: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
+                              );
+                            },
+                          ),
+                          Expanded(
+                            child: _ListingsContent(
+                              listings: filteredListings,
+                              favoriteIds: favoriteIds,
+                              hasAnyListing: allListings.isNotEmpty,
+                              onFavoriteTap: (listing) {
+                                _toggleFavorite(
+                                  user: user,
+                                  listing: listing,
+                                  isFavorite: favoriteIds.contains(listing.id),
+                                );
+                              },
+                              onOpenListing: (listing) {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ListingDetailScreen(listing: listing),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  floatingActionButton: FloatingActionButton.extended(
+                    onPressed: () => _openAddListing(user),
+                    icon: const Icon(Icons.add),
+                    label: const Text('Ilan ekle'),
+                  ),
+                );
+              },
             );
           },
         );
@@ -435,6 +479,8 @@ class _SearchAndFilters extends StatelessWidget {
     required this.listingCount,
     required this.visibleCount,
     required this.activeFilterCount,
+    required this.user,
+    required this.profile,
     required this.onSearchChanged,
     required this.onCategorySelected,
     required this.onStatusSelected,
@@ -443,6 +489,11 @@ class _SearchAndFilters extends StatelessWidget {
     required this.onSortOptionChanged,
     required this.onPriceChanged,
     required this.onClearAdvancedFilters,
+    required this.onOpenFavorites,
+    required this.onOpenProfile,
+    required this.onOpenMyListings,
+    required this.onOpenAddListing,
+    required this.onOpenLogin,
   });
 
   final TextEditingController controller;
@@ -457,6 +508,8 @@ class _SearchAndFilters extends StatelessWidget {
   final int listingCount;
   final int visibleCount;
   final int activeFilterCount;
+  final User? user;
+  final AppUserModel? profile;
   final ValueChanged<String> onSearchChanged;
   final ValueChanged<String> onCategorySelected;
   final ValueChanged<String> onStatusSelected;
@@ -465,6 +518,11 @@ class _SearchAndFilters extends StatelessWidget {
   final ValueChanged<ListingSortOption> onSortOptionChanged;
   final VoidCallback onPriceChanged;
   final VoidCallback onClearAdvancedFilters;
+  final VoidCallback onOpenFavorites;
+  final VoidCallback onOpenProfile;
+  final VoidCallback onOpenMyListings;
+  final VoidCallback onOpenAddListing;
+  final VoidCallback onOpenLogin;
 
   @override
   Widget build(BuildContext context) {
@@ -507,7 +565,9 @@ class _SearchAndFilters extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Orman urunleri pazari',
+                      user == null
+                          ? 'Orman urunleri pazari'
+                          : 'Hos geldin, ${profile?.displayName ?? 'Orman Pazar kullanicisi'}',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
@@ -515,8 +575,10 @@ class _SearchAndFilters extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      'Odun, tomruk, kereste ve talas ilanlarini kesfet.',
-                      maxLines: 1,
+                      user == null
+                          ? 'Odun, tomruk, kereste ve talas ilanlarini kesfet.'
+                          : _buildSignedInSubtitle(),
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.78),
@@ -530,6 +592,16 @@ class _SearchAndFilters extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           _MiniStats(listingCount: listingCount, visibleCount: visibleCount),
+          const SizedBox(height: 10),
+          _HomeActionStrip(
+            user: user,
+            profile: profile,
+            onOpenFavorites: onOpenFavorites,
+            onOpenProfile: onOpenProfile,
+            onOpenMyListings: onOpenMyListings,
+            onOpenAddListing: onOpenAddListing,
+            onOpenLogin: onOpenLogin,
+          ),
           const SizedBox(height: 10),
           TextField(
             controller: controller,
@@ -781,6 +853,260 @@ class _SearchAndFilters extends StatelessWidget {
       case DeliveryFilterOption.pickupOnly:
         return 'Teslim alinir';
     }
+  }
+
+  String _buildSignedInSubtitle() {
+    final mode = profile?.userMode ?? AppConstants.buyerSellerMode;
+    final label = AppConstants.userModeLabel(mode);
+    return '$label modunda kesfet, favori topla ve ilan akisini hizli yonet.';
+  }
+}
+
+class _HomeActionStrip extends StatelessWidget {
+  const _HomeActionStrip({
+    required this.user,
+    required this.profile,
+    required this.onOpenFavorites,
+    required this.onOpenProfile,
+    required this.onOpenMyListings,
+    required this.onOpenAddListing,
+    required this.onOpenLogin,
+  });
+
+  final User? user;
+  final AppUserModel? profile;
+  final VoidCallback onOpenFavorites;
+  final VoidCallback onOpenProfile;
+  final VoidCallback onOpenMyListings;
+  final VoidCallback onOpenAddListing;
+  final VoidCallback onOpenLogin;
+
+  @override
+  Widget build(BuildContext context) {
+    final mode = profile?.userMode ?? AppConstants.buyerSellerMode;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: _SignalChip(
+                icon: AppConstants.userModeIcon(mode),
+                label: user == null
+                    ? 'Misafir'
+                    : AppConstants.userModeLabel(mode),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _SignalChip(
+                icon: Icons.verified_user_outlined,
+                label: user == null
+                    ? 'Giris kapali'
+                    : 'Guven puani ${profile?.trustScore ?? 0}/3',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionButton(
+                icon: user == null ? Icons.login : Icons.favorite_outline,
+                title: user == null ? 'Giris yap' : 'Favorilerim',
+                subtitle: user == null ? 'Hesabini ac' : 'Kaydettiklerin',
+                onTap: user == null ? onOpenLogin : onOpenFavorites,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _QuickActionButton(
+                icon: user == null
+                    ? Icons.person_add_alt_1_outlined
+                    : Icons.inventory_2_outlined,
+                title: user == null ? 'Hesap ac' : 'Benim ilanlarim',
+                subtitle: user == null ? 'Kaydol veya giris yap' : 'Paneli ac',
+                onTap: user == null ? onOpenLogin : onOpenMyListings,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _QuickActionButton(
+                icon: user == null ? Icons.lock_open_outlined : Icons.add_box,
+                title: user == null ? 'Profil' : 'Ilan ekle',
+                subtitle: user == null ? 'Sonra acilir' : 'Yeni kayit',
+                onTap: user == null ? onOpenLogin : onOpenAddListing,
+              ),
+            ),
+          ],
+        ),
+        if (user != null) ...[
+          const SizedBox(height: 10),
+          _HomeSecondaryRow(
+            onOpenProfile: onOpenProfile,
+            onOpenMyListings: onOpenMyListings,
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _HomeSecondaryRow extends StatelessWidget {
+  const _HomeSecondaryRow({
+    required this.onOpenProfile,
+    required this.onOpenMyListings,
+  });
+
+  final VoidCallback onOpenProfile;
+  final VoidCallback onOpenMyListings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: onOpenProfile,
+            icon: const Icon(
+              Icons.account_circle_outlined,
+              color: Colors.white,
+            ),
+            label: const Text(
+              'Profilim',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+              backgroundColor: Colors.white.withValues(alpha: 0.08),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: onOpenMyListings,
+            icon: const Icon(Icons.analytics_outlined, color: Colors.white),
+            label: const Text(
+              'Satici paneli',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+              backgroundColor: Colors.white.withValues(alpha: 0.08),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _SignalChip extends StatelessWidget {
+  const _SignalChip({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: AppConstants.amber, size: 15),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickActionButton extends StatelessWidget {
+  const _QuickActionButton({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Ink(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                color: AppConstants.amber,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 18, color: AppConstants.deepGreen),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.white.withValues(alpha: 0.72),
+                height: 1.25,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1080,26 +1406,7 @@ class _StateMessage extends StatelessWidget {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 48, color: AppConstants.leafGreen),
-            const SizedBox(height: 12),
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppConstants.mutedText),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+        child: AppEmptyStateCard(icon: icon, title: title, message: message),
       ),
     );
   }

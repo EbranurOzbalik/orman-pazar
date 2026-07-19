@@ -1354,22 +1354,492 @@ class _ListingsContent extends StatelessWidget {
       );
     }
 
-    return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 140),
-      itemCount: listings.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 14),
-      itemBuilder: (context, index) {
-        final listing = listings[index];
+    final featuredListings = listings
+        .where((listing) => listing.status == AppConstants.activeStatus)
+        .take(5)
+        .toList();
+    final categoryItems = _buildCategoryItems(listings);
 
-        return ListingCard(
-          listing: listing,
-          isFavorite: favoriteIds.contains(listing.id),
-          onFavoriteTap: () => onFavoriteTap(listing),
-          onTap: () => onOpenListing(listing),
-        );
-      },
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 140),
+      children: [
+        if (featuredListings.isNotEmpty) ...[
+          _FeaturedListingsSection(
+            listings: featuredListings,
+            favoriteIds: favoriteIds,
+            onOpenListing: onOpenListing,
+            onFavoriteTap: onFavoriteTap,
+          ),
+          const SizedBox(height: 14),
+        ],
+        if (categoryItems.isNotEmpty) ...[
+          _CategoryPulseSection(items: categoryItems),
+          const SizedBox(height: 14),
+        ],
+        _ListingsHeadline(totalCount: listings.length),
+        const SizedBox(height: 12),
+        ...listings.map((listing) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 14),
+            child: ListingCard(
+              listing: listing,
+              isFavorite: favoriteIds.contains(listing.id),
+              onFavoriteTap: () => onFavoriteTap(listing),
+              onTap: () => onOpenListing(listing),
+            ),
+          );
+        }),
+      ],
     );
   }
+
+  List<_CategoryPulseItem> _buildCategoryItems(List<ListingModel> source) {
+    final counts = <String, int>{};
+    for (final listing in source) {
+      counts.update(listing.category, (value) => value + 1, ifAbsent: () => 1);
+    }
+
+    final items = counts.entries.toList()
+      ..sort((left, right) => right.value.compareTo(left.value));
+
+    return items
+        .take(4)
+        .map(
+          (entry) => _CategoryPulseItem(
+            category: entry.key,
+            count: entry.value,
+            icon: _categoryIcon(entry.key),
+            color: _categoryColor(entry.key),
+          ),
+        )
+        .toList();
+  }
+
+  IconData _categoryIcon(String category) {
+    switch (category) {
+      case 'Yakacak Odun':
+        return Icons.local_fire_department_outlined;
+      case 'Kereste':
+        return Icons.carpenter_outlined;
+      case 'Tomruk':
+        return Icons.forest_outlined;
+      case 'Talas':
+        return Icons.grass_outlined;
+      default:
+        return Icons.eco_outlined;
+    }
+  }
+
+  Color _categoryColor(String category) {
+    switch (category) {
+      case 'Yakacak Odun':
+        return AppConstants.clay;
+      case 'Kereste':
+        return AppConstants.woodBrown;
+      case 'Tomruk':
+        return AppConstants.forestGreen;
+      case 'Talas':
+        return AppConstants.sage;
+      default:
+        return AppConstants.leafGreen;
+    }
+  }
+}
+
+class _FeaturedListingsSection extends StatelessWidget {
+  const _FeaturedListingsSection({
+    required this.listings,
+    required this.favoriteIds,
+    required this.onOpenListing,
+    required this.onFavoriteTap,
+  });
+
+  final List<ListingModel> listings;
+  final Set<String> favoriteIds;
+  final ValueChanged<ListingModel> onOpenListing;
+  final ValueChanged<ListingModel> onFavoriteTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSectionCard(
+      icon: Icons.auto_awesome_outlined,
+      title: 'One cikan ilanlar',
+      subtitle:
+          'Aktif ve dikkat ceken ilanlari hizlica tara, sonra tum listeye gec.',
+      child: SizedBox(
+        height: 224,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: listings.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 12),
+          itemBuilder: (context, index) {
+            final listing = listings[index];
+
+            return SizedBox(
+              width: 240,
+              child: _FeaturedListingCard(
+                listing: listing,
+                isFavorite: favoriteIds.contains(listing.id),
+                onTap: () => onOpenListing(listing),
+                onFavoriteTap: () => onFavoriteTap(listing),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _FeaturedListingCard extends StatelessWidget {
+  const _FeaturedListingCard({
+    required this.listing,
+    required this.isFavorite,
+    required this.onTap,
+    required this.onFavoriteTap,
+  });
+
+  final ListingModel listing;
+  final bool isFavorite;
+  final VoidCallback onTap;
+  final VoidCallback onFavoriteTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final accent = _categoryColor(listing.category);
+
+    return Material(
+      color: AppConstants.cream,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: onTap,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppConstants.border),
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (listing.imageUrls.isNotEmpty)
+                      Image.network(
+                        listing.imageUrls.first,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _FeaturedImageFallback(
+                          icon: _categoryIcon(listing.category),
+                        ),
+                      )
+                    else
+                      _FeaturedImageFallback(
+                        icon: _categoryIcon(listing.category),
+                      ),
+                    Positioned(
+                      top: 10,
+                      left: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 9,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: accent,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          listing.category,
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w800,
+                              ),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Material(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(999),
+                        child: InkWell(
+                          onTap: onFavoriteTap,
+                          borderRadius: BorderRadius.circular(999),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Icon(
+                              isFavorite
+                                  ? Icons.favorite
+                                  : Icons.favorite_border,
+                              color: isFavorite
+                                  ? AppConstants.clay
+                                  : AppConstants.deepGreen,
+                              size: 18,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(height: 4, color: accent),
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      listing.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppConstants.deepGreen,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on_outlined,
+                          size: 15,
+                          color: AppConstants.mutedText,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            '${listing.city} / ${listing.district}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: AppConstants.mutedText,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${_formatNumber(listing.amount)} ${listing.unit}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: AppConstants.deepGreen,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${_formatNumber(listing.price)} TL',
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: AppConstants.woodBrown,
+                                fontWeight: FontWeight.w900,
+                              ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatNumber(double value) {
+    if (value == value.roundToDouble()) {
+      return value.toStringAsFixed(0);
+    }
+    return value.toStringAsFixed(2);
+  }
+
+  IconData _categoryIcon(String category) {
+    switch (category) {
+      case 'Yakacak Odun':
+        return Icons.local_fire_department_outlined;
+      case 'Kereste':
+        return Icons.carpenter_outlined;
+      case 'Tomruk':
+        return Icons.forest_outlined;
+      case 'Talas':
+        return Icons.grass_outlined;
+      default:
+        return Icons.eco_outlined;
+    }
+  }
+
+  Color _categoryColor(String category) {
+    switch (category) {
+      case 'Yakacak Odun':
+        return AppConstants.clay;
+      case 'Kereste':
+        return AppConstants.woodBrown;
+      case 'Tomruk':
+        return AppConstants.forestGreen;
+      case 'Talas':
+        return AppConstants.sage;
+      default:
+        return AppConstants.leafGreen;
+    }
+  }
+}
+
+class _FeaturedImageFallback extends StatelessWidget {
+  const _FeaturedImageFallback({required this.icon});
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppConstants.mossGreen,
+      child: Center(
+        child: Icon(icon, color: AppConstants.forestGreen, size: 34),
+      ),
+    );
+  }
+}
+
+class _CategoryPulseSection extends StatelessWidget {
+  const _CategoryPulseSection({required this.items});
+
+  final List<_CategoryPulseItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppSectionCard(
+      icon: Icons.hub_outlined,
+      title: 'Kategori nabzi',
+      subtitle: 'Bugun listede en cok gorunen urun gruplari.',
+      child: Row(
+        children: items.map((item) {
+          final isLast = item == items.last;
+          return Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(right: isLast ? 0 : 10),
+              child: _CategoryPulseCard(item: item),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _CategoryPulseCard extends StatelessWidget {
+  const _CategoryPulseCard({required this.item});
+
+  final _CategoryPulseItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: item.color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(item.icon, color: item.color, size: 18),
+          const SizedBox(height: 10),
+          Text(
+            item.count.toString(),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppConstants.deepGreen,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            item.category,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: AppConstants.deepGreen,
+              fontWeight: FontWeight.w700,
+              height: 1.25,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ListingsHeadline extends StatelessWidget {
+  const _ListingsHeadline({required this.totalCount});
+
+  final int totalCount;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Tum ilanlar',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: AppConstants.deepGreen,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$totalCount ilan arasindan detaylari inceleyebilirsin.',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppConstants.mutedText,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        Text(
+          'Liste',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: AppConstants.woodBrown,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoryPulseItem {
+  const _CategoryPulseItem({
+    required this.category,
+    required this.count,
+    required this.icon,
+    required this.color,
+  });
+
+  final String category;
+  final int count;
+  final IconData icon;
+  final Color color;
 }
 
 class _LoadingState extends StatelessWidget {

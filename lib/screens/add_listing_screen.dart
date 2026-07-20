@@ -27,6 +27,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
   final _priceController = TextEditingController();
   final _cityController = TextEditingController();
   final _districtController = TextEditingController();
+  final _latitudeController = TextEditingController();
+  final _longitudeController = TextEditingController();
   final _phoneController = TextEditingController();
 
   final ListingService _listingService = ListingService();
@@ -62,6 +64,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
     _priceController.dispose();
     _cityController.dispose();
     _districtController.dispose();
+    _latitudeController.dispose();
+    _longitudeController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
@@ -146,6 +150,8 @@ class _AddListingScreenState extends State<AddListingScreen> {
         sellerId: user.uid,
         sellerName: sellerName,
         status: _status,
+        latitude: _parseOptionalCoordinate(_latitudeController.text),
+        longitude: _parseOptionalCoordinate(_longitudeController.text),
         createdAt: DateTime.now(),
       );
 
@@ -176,6 +182,14 @@ class _AddListingScreenState extends State<AddListingScreen> {
 
   double _parseNumber(String value) {
     return double.tryParse(value.trim().replaceAll(',', '.')) ?? 0;
+  }
+
+  double? _parseOptionalCoordinate(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) {
+      return null;
+    }
+    return double.tryParse(trimmed.replaceAll(',', '.'));
   }
 
   String _resolveSellerName({
@@ -351,6 +365,32 @@ class _AddListingScreenState extends State<AddListingScreen> {
     return null;
   }
 
+  String? _latitudeValidator(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    final number = double.tryParse(trimmed.replaceAll(',', '.'));
+    if (number == null || number < -90 || number > 90) {
+      return 'Enlem -90 ile 90 arasinda olmali';
+    }
+    return null;
+  }
+
+  String? _longitudeValidator(String? value) {
+    final trimmed = value?.trim() ?? '';
+    if (trimmed.isEmpty) {
+      return null;
+    }
+
+    final number = double.tryParse(trimmed.replaceAll(',', '.'));
+    if (number == null || number < -180 || number > 180) {
+      return 'Boylam -180 ile 180 arasinda olmali';
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -492,6 +532,13 @@ class _AddListingScreenState extends State<AddListingScreen> {
                     validator: _districtValidator,
                   ),
                   const SizedBox(height: 12),
+                  _LocationReadinessCard(
+                    latitudeController: _latitudeController,
+                    longitudeController: _longitudeController,
+                    latitudeValidator: _latitudeValidator,
+                    longitudeValidator: _longitudeValidator,
+                  ),
+                  const SizedBox(height: 12),
                   _DropdownField(
                     label: 'Nem durumu',
                     value: _moistureStatus,
@@ -563,6 +610,112 @@ class _FormPanel extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           ...children,
+        ],
+      ),
+    );
+  }
+}
+
+class _LocationReadinessCard extends StatelessWidget {
+  const _LocationReadinessCard({
+    required this.latitudeController,
+    required this.longitudeController,
+    required this.latitudeValidator,
+    required this.longitudeValidator,
+  });
+
+  final TextEditingController latitudeController;
+  final TextEditingController longitudeController;
+  final String? Function(String? value) latitudeValidator;
+  final String? Function(String? value) longitudeValidator;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppConstants.cream,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppConstants.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: AppConstants.mossGreen,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.map_outlined,
+                  color: AppConstants.forestGreen,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Harita altyapisi hazir',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: AppConstants.deepGreen,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Istersen koordinat girebilirsin. Haritadan konum secme akisi sonraki gunde gelecek.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppConstants.mutedText,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: TextFormField(
+                  controller: latitudeController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Latitude (opsiyonel)',
+                    prefixIcon: Icon(Icons.north_outlined),
+                  ),
+                  validator: latitudeValidator,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: longitudeController,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                    signed: true,
+                  ),
+                  decoration: const InputDecoration(
+                    labelText: 'Longitude (opsiyonel)',
+                    prefixIcon: Icon(Icons.east_outlined),
+                  ),
+                  validator: longitudeValidator,
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );

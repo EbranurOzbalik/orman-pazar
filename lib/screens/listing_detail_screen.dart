@@ -423,6 +423,53 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                           ),
                           const SizedBox(height: 14),
                           _InfoPanel(
+                            title: 'Konum hazirligi',
+                            subtitle:
+                                'Harita deneyimi icin tutulan temel konum verisi.',
+                            children: [
+                              _DetailRow(
+                                icon: Icons.location_on_outlined,
+                                label: 'Konum',
+                                value:
+                                    '${widget.listing.city} / ${widget.listing.district}',
+                              ),
+                              _DetailRow(
+                                icon: Icons.map_outlined,
+                                label: 'Koordinat durumu',
+                                value:
+                                    widget.listing.latitude != null &&
+                                        widget.listing.longitude != null
+                                    ? 'Koordinat hazir'
+                                    : 'Koordinat henuz eklenmedi',
+                                valueColor:
+                                    widget.listing.latitude != null &&
+                                        widget.listing.longitude != null
+                                    ? AppConstants.leafGreen
+                                    : AppConstants.woodBrown,
+                              ),
+                              _DetailRow(
+                                icon: Icons.north_outlined,
+                                label: 'Latitude',
+                                value: widget.listing.latitude == null
+                                    ? '-'
+                                    : _formatCoordinate(
+                                        widget.listing.latitude!,
+                                      ),
+                              ),
+                              _DetailRow(
+                                icon: Icons.east_outlined,
+                                label: 'Longitude',
+                                value: widget.listing.longitude == null
+                                    ? '-'
+                                    : _formatCoordinate(
+                                        widget.listing.longitude!,
+                                      ),
+                                isLast: true,
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          _InfoPanel(
                             title: 'Aciklama',
                             subtitle: 'Saticinin urun icin ekledigi notlar.',
                             children: [
@@ -477,6 +524,10 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     }
 
     return '${(difference.inDays / 365).floor()} yil once';
+  }
+
+  String _formatCoordinate(double value) {
+    return value.toStringAsFixed(6);
   }
 }
 

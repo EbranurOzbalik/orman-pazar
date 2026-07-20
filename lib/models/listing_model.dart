@@ -21,6 +21,8 @@ class ListingModel {
     required this.sellerId,
     required this.sellerName,
     required this.status,
+    this.latitude,
+    this.longitude,
     required this.createdAt,
   });
 
@@ -41,6 +43,8 @@ class ListingModel {
   final String sellerId;
   final String sellerName;
   final String status;
+  final double? latitude;
+  final double? longitude;
   final DateTime createdAt;
 
   ListingModel copyWith({
@@ -61,6 +65,8 @@ class ListingModel {
     String? sellerId,
     String? sellerName,
     String? status,
+    double? latitude,
+    double? longitude,
     DateTime? createdAt,
   }) {
     return ListingModel(
@@ -81,6 +87,8 @@ class ListingModel {
       sellerId: sellerId ?? this.sellerId,
       sellerName: sellerName ?? this.sellerName,
       status: status ?? this.status,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       createdAt: createdAt ?? this.createdAt,
     );
   }
@@ -103,6 +111,8 @@ class ListingModel {
       'sellerId': sellerId,
       'sellerName': sellerName,
       'status': status,
+      'latitude': latitude,
+      'longitude': longitude,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -128,6 +138,8 @@ class ListingModel {
       sellerId: map['sellerId'] as String? ?? '',
       sellerName: map['sellerName'] as String? ?? '',
       status: _normalizeStatus(map['status'] as String?),
+      latitude: _toNullableDouble(map['latitude']),
+      longitude: _toNullableDouble(map['longitude']),
       createdAt: _toDateTime(map['createdAt']),
     );
   }
@@ -227,6 +239,22 @@ class ListingModel {
       return double.tryParse(value.replaceAll(',', '.')) ?? 0;
     }
     return 0;
+  }
+
+  static double? _toNullableDouble(dynamic value) {
+    if (value == null) {
+      return null;
+    }
+    if (value is int) {
+      return value.toDouble();
+    }
+    if (value is double) {
+      return value;
+    }
+    if (value is String) {
+      return double.tryParse(value.replaceAll(',', '.'));
+    }
+    return null;
   }
 
   static List<String> _toStringList(dynamic value) {

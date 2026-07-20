@@ -391,6 +391,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             sortOption: _sortOption,
                             listingCount: allListings.length,
                             visibleCount: filteredListings.length,
+                            locationReadyCount: allListings
+                                .where((listing) => listing.hasCoordinates)
+                                .length,
                             activeFilterCount: _activeFilterCount,
                             user: user,
                             profile: profile,
@@ -478,6 +481,7 @@ class _SearchAndFilters extends StatelessWidget {
     required this.sortOption,
     required this.listingCount,
     required this.visibleCount,
+    required this.locationReadyCount,
     required this.activeFilterCount,
     required this.user,
     required this.profile,
@@ -507,6 +511,7 @@ class _SearchAndFilters extends StatelessWidget {
   final ListingSortOption sortOption;
   final int listingCount;
   final int visibleCount;
+  final int locationReadyCount;
   final int activeFilterCount;
   final User? user;
   final AppUserModel? profile;
@@ -591,7 +596,11 @@ class _SearchAndFilters extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          _MiniStats(listingCount: listingCount, visibleCount: visibleCount),
+          _MiniStats(
+            listingCount: listingCount,
+            visibleCount: visibleCount,
+            locationReadyCount: locationReadyCount,
+          ),
           const SizedBox(height: 10),
           _HomeActionStrip(
             user: user,
@@ -1269,10 +1278,15 @@ class _FilterSection extends StatelessWidget {
 }
 
 class _MiniStats extends StatelessWidget {
-  const _MiniStats({required this.listingCount, required this.visibleCount});
+  const _MiniStats({
+    required this.listingCount,
+    required this.visibleCount,
+    required this.locationReadyCount,
+  });
 
   final int listingCount;
   final int visibleCount;
+  final int locationReadyCount;
 
   @override
   Widget build(BuildContext context) {
@@ -1313,6 +1327,23 @@ class _MiniStats extends StatelessWidget {
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.w800,
+            ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8),
+            child: Text('•', style: TextStyle(color: Colors.white70)),
+          ),
+          const Icon(Icons.map_outlined, color: AppConstants.amber, size: 16),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              '$locationReadyCount haritaya hazir',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],

@@ -47,6 +47,18 @@ class ListingModel {
   final double? longitude;
   final DateTime createdAt;
 
+  bool get hasCoordinates => latitude != null && longitude != null;
+
+  String get locationLabel => '$city / $district';
+
+  String get coordinatesLabel {
+    if (!hasCoordinates) {
+      return '-';
+    }
+
+    return '${latitude!.toStringAsFixed(6)}, ${longitude!.toStringAsFixed(6)}';
+  }
+
   ListingModel copyWith({
     String? id,
     String? title,

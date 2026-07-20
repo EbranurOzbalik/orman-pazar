@@ -119,7 +119,7 @@ class ListingCard extends StatelessWidget {
                                     const SizedBox(width: 4),
                                     Expanded(
                                       child: Text(
-                                        '${listing.city} / ${listing.district}',
+                                        listing.locationLabel,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: Theme.of(context)
@@ -154,6 +154,11 @@ class ListingCard extends StatelessWidget {
                           ),
                           _InfoChip(text: listing.woodType),
                           _InfoChip(text: listing.moistureStatus),
+                          if (listing.hasCoordinates)
+                            const _InfoChip(
+                              text: 'Harita hazir',
+                              icon: Icons.map_outlined,
+                            ),
                           if (listing.hasDelivery)
                             const _InfoChip(
                               text: 'Nakliye',

@@ -187,6 +187,35 @@ Uygulamanın odağı; odun, kereste, tomruk, talaş ve benzeri ürünleri satan 
 - Giriş ekranı modları daha iyi anlatan bir önizleme alanı kazandı.
 - `Alici` modundaki kullanıcıların ilan eklemesi engellendi.
 
+### Gün 21 - Ortak UI şablonu
+
+- Profil ve satıcı ekranları için ortak hero, panel, metrik ve boş durum bileşenleri oluşturuldu.
+- Kart, buton, chip ve bildirim dili daha tutarlı hale getirildi.
+- `Benim ilanlarım` ve `Profilim` ekranları aynı tasarım ailesine taşındı.
+- Görsel hiyerarşi sadeleşti ve daha premium bir panel hissi eklendi.
+
+### Gün 22 - Kişiselleşen ana ekran
+
+- Ana ekran giriş yapan kullanıcıya göre kişiselleştirildi.
+- Kullanıcı modu ve güven puanı için üst sinyal alanları eklendi.
+- `Favorilerim`, `Benim ilanlarım`, `İlan ekle` ve `Profilim` için hızlı aksiyonlar eklendi.
+- Misafir kullanıcı için daha yönlendirici bir home akışı hazırlandı.
+
+### Gün 23 - Keşif bölümleri
+
+- Ana ekrana `Öne çıkan ilanlar` bölümü eklendi.
+- `Kategori nabzı` alanı ile yoğun ürün grupları görünür hale getirildi.
+- `Tüm ilanlar` bölümü daha güçlü bir görsel akışla ayrıştırıldı.
+- Home ekranı yalnızca liste değil, daha gerçek bir pazar vitrini gibi davranmaya başladı.
+
+### Gün 24 - Konum altyapısı hazırlığı
+
+- `ListingModel` içine opsiyonel `latitude` ve `longitude` alanları eklendi.
+- İlan ekleme ve ilan düzenleme ekranlarına koordinat alanları eklendi.
+- İlan detay ekranına `Konum hazırlığı` bölümü eklendi.
+- Koordinatlı ilanlar için kartlarda `Harita hazır` sinyali gösterilmeye başlandı.
+- Ana ekranda `haritaya hazır` ilan sayısı ayrı bir mini istatistik olarak görünür hale getirildi.
+
 ## Proje Yapısı
 
 ```text

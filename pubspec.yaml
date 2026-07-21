@@ -39,6 +39,7 @@ dependencies:
   firebase_auth: ^6.5.3
   firebase_storage: ^13.0.3
   image_picker: ^1.2.0
+  google_maps_flutter: ^2.17.1
 
 dev_dependencies:
   flutter_test:

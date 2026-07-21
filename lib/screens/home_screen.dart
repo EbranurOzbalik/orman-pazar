@@ -15,6 +15,7 @@ import 'add_listing_screen.dart';
 import 'favorites_screen.dart';
 import 'listing_detail_screen.dart';
 import 'login_screen.dart';
+import 'map_explore_screen.dart';
 import 'my_listings_screen.dart';
 import 'profile_screen.dart';
 
@@ -290,6 +291,12 @@ class _HomeScreenState extends State<HomeScreen> {
     ).push(MaterialPageRoute(builder: (_) => const MyListingsScreen()));
   }
 
+  void _openMapExplore() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const MapExploreScreen()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
@@ -335,6 +342,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       else
                         Row(
                           children: [
+                            IconButton(
+                              tooltip: 'Haritada kesfet',
+                              onPressed: _openMapExplore,
+                              icon: const Icon(Icons.map_outlined),
+                            ),
                             IconButton(
                               tooltip: 'Favorilerim',
                               onPressed: () => _openFavorites(user),

@@ -1,0 +1,2 @@
+// Copy this file to Maps.xcconfig and replace the placeholder with your real Google Maps API key.
+MAPS_API_KEY=__MAPS_API_KEY__

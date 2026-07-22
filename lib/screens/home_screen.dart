@@ -389,57 +389,59 @@ class _HomeScreenState extends State<HomeScreen> {
                       final allListings = snapshot.data ?? [];
                       final filteredListings = _filterListings(allListings);
 
-                      return Column(
-                        children: [
-                          _SearchAndFilters(
-                            controller: _searchController,
-                            minPriceController: _minPriceController,
-                            maxPriceController: _maxPriceController,
-                            searchFocusNode: _searchFocusNode,
-                            selectedCategory: _selectedCategory,
-                            selectedStatus: _selectedStatus,
-                            selectedWoodType: _selectedWoodType,
-                            deliveryFilter: _deliveryFilter,
-                            sortOption: _sortOption,
-                            listingCount: allListings.length,
-                            visibleCount: filteredListings.length,
-                            locationReadyCount: allListings
-                                .where((listing) => listing.hasCoordinates)
-                                .length,
-                            activeFilterCount: _activeFilterCount,
-                            user: user,
-                            profile: profile,
-                            onSearchChanged: _queueSearchUpdate,
-                            onCategorySelected: (category) {
-                              setState(() => _selectedCategory = category);
-                            },
-                            onStatusSelected: (status) {
-                              setState(() => _selectedStatus = status);
-                            },
-                            onWoodTypeSelected: (woodType) {
-                              setState(() => _selectedWoodType = woodType);
-                            },
-                            onDeliveryFilterChanged: (value) {
-                              setState(() => _deliveryFilter = value);
-                            },
-                            onSortOptionChanged: (value) {
-                              setState(() => _sortOption = value);
-                            },
-                            onPriceChanged: () => setState(() {}),
-                            onClearAdvancedFilters: _clearAdvancedFilters,
-                            onOpenFavorites: () => _openFavorites(user),
-                            onOpenProfile: () => _openProfile(user),
-                            onOpenMyListings: () => _openMyListings(user),
-                            onOpenAddListing: () => _openAddListing(user),
-                            onOpenLogin: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const LoginScreen(),
-                                ),
-                              );
-                            },
+                      return CustomScrollView(
+                        slivers: [
+                          SliverToBoxAdapter(
+                            child: _SearchAndFilters(
+                              controller: _searchController,
+                              minPriceController: _minPriceController,
+                              maxPriceController: _maxPriceController,
+                              searchFocusNode: _searchFocusNode,
+                              selectedCategory: _selectedCategory,
+                              selectedStatus: _selectedStatus,
+                              selectedWoodType: _selectedWoodType,
+                              deliveryFilter: _deliveryFilter,
+                              sortOption: _sortOption,
+                              listingCount: allListings.length,
+                              visibleCount: filteredListings.length,
+                              locationReadyCount: allListings
+                                  .where((listing) => listing.hasCoordinates)
+                                  .length,
+                              activeFilterCount: _activeFilterCount,
+                              user: user,
+                              profile: profile,
+                              onSearchChanged: _queueSearchUpdate,
+                              onCategorySelected: (category) {
+                                setState(() => _selectedCategory = category);
+                              },
+                              onStatusSelected: (status) {
+                                setState(() => _selectedStatus = status);
+                              },
+                              onWoodTypeSelected: (woodType) {
+                                setState(() => _selectedWoodType = woodType);
+                              },
+                              onDeliveryFilterChanged: (value) {
+                                setState(() => _deliveryFilter = value);
+                              },
+                              onSortOptionChanged: (value) {
+                                setState(() => _sortOption = value);
+                              },
+                              onPriceChanged: () => setState(() {}),
+                              onClearAdvancedFilters: _clearAdvancedFilters,
+                              onOpenFavorites: () => _openFavorites(user),
+                              onOpenProfile: () => _openProfile(user),
+                              onOpenMyListings: () => _openMyListings(user),
+                              onOpenAddListing: () => _openAddListing(user),
+                              onOpenLogin: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginScreen(),
+                                  ),
+                                );
+                              },
+                            ),
                           ),
-                          Expanded(
+                          SliverToBoxAdapter(
                             child: _ListingsContent(
                               listings: filteredListings,
                               favoriteIds: favoriteIds,
@@ -557,7 +559,7 @@ class _SearchAndFilters extends StatelessWidget {
           bottom: BorderSide(color: AppConstants.woodBrown, width: 3),
         ),
       ),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -565,8 +567,8 @@ class _SearchAndFilters extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 38,
-                height: 38,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: AppConstants.amber,
                   borderRadius: BorderRadius.circular(8),
@@ -585,17 +587,17 @@ class _SearchAndFilters extends StatelessWidget {
                       user == null
                           ? 'Orman urunleri pazari'
                           : 'Hos geldin, ${profile?.displayName ?? 'Orman Pazar kullanicisi'}',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 4),
                     Text(
                       user == null
                           ? 'Odun, tomruk, kereste ve talas ilanlarini kesfet.'
                           : _buildSignedInSubtitle(),
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Colors.white.withValues(alpha: 0.78),
@@ -607,13 +609,13 @@ class _SearchAndFilters extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           _MiniStats(
             listingCount: listingCount,
             visibleCount: visibleCount,
             locationReadyCount: locationReadyCount,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           _HomeActionStrip(
             user: user,
             profile: profile,
@@ -623,7 +625,7 @@ class _SearchAndFilters extends StatelessWidget {
             onOpenAddListing: onOpenAddListing,
             onOpenLogin: onOpenLogin,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           TextField(
             controller: controller,
             focusNode: searchFocusNode,
@@ -649,7 +651,7 @@ class _SearchAndFilters extends StatelessWidget {
             ),
             onChanged: onSearchChanged,
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Row(
             children: [
               Expanded(
@@ -662,7 +664,7 @@ class _SearchAndFilters extends StatelessWidget {
               _ActiveFilterBadge(count: activeFilterCount),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           _FilterSection(
             title: 'Kategori',
             child: SizedBox(
@@ -702,7 +704,7 @@ class _SearchAndFilters extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           _FilterSection(
             title: 'Ayrintili filtreler',
             child: Container(
@@ -905,66 +907,55 @@ class _HomeActionStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mode = profile?.userMode ?? AppConstants.buyerSellerMode;
+    final modeLabel = user == null
+        ? 'Misafir'
+        : 'Mod: ${AppConstants.userModeLabel(mode)}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Expanded(
-              child: _SignalChip(
-                icon: AppConstants.userModeIcon(mode),
-                label: user == null
-                    ? 'Misafir'
-                    : AppConstants.userModeLabel(mode),
-              ),
+            _SignalChip(
+              icon: AppConstants.userModeIcon(mode),
+              label: modeLabel,
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: _SignalChip(
-                icon: Icons.verified_user_outlined,
-                label: user == null
-                    ? 'Giris kapali'
-                    : 'Guven puani ${profile?.trustScore ?? 0}/3',
-              ),
+            _SignalChip(
+              icon: Icons.verified_user_outlined,
+              label: user == null
+                  ? 'Giris gerekli'
+                  : 'Guven ${profile?.trustScore ?? 0}/3',
             ),
           ],
         ),
-        const SizedBox(height: 10),
-        Row(
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Expanded(
-              child: _QuickActionButton(
-                icon: user == null ? Icons.login : Icons.favorite_outline,
-                title: user == null ? 'Giris yap' : 'Favorilerim',
-                subtitle: user == null ? 'Hesabini ac' : 'Kaydettiklerin',
-                onTap: user == null ? onOpenLogin : onOpenFavorites,
-              ),
+            _CompactActionButton(
+              icon: user == null ? Icons.login : Icons.favorite_outline,
+              label: user == null ? 'Giris yap' : 'Favorilerim',
+              onTap: user == null ? onOpenLogin : onOpenFavorites,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _QuickActionButton(
-                icon: user == null
-                    ? Icons.person_add_alt_1_outlined
-                    : Icons.inventory_2_outlined,
-                title: user == null ? 'Hesap ac' : 'Benim ilanlarim',
-                subtitle: user == null ? 'Kaydol veya giris yap' : 'Paneli ac',
-                onTap: user == null ? onOpenLogin : onOpenMyListings,
-              ),
+            _CompactActionButton(
+              icon: user == null
+                  ? Icons.person_add_alt_1_outlined
+                  : Icons.inventory_2_outlined,
+              label: user == null ? 'Hesap ac' : 'Benim ilanlarim',
+              onTap: user == null ? onOpenLogin : onOpenMyListings,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _QuickActionButton(
-                icon: user == null ? Icons.lock_open_outlined : Icons.add_box,
-                title: user == null ? 'Profil' : 'Ilan ekle',
-                subtitle: user == null ? 'Sonra acilir' : 'Yeni kayit',
-                onTap: user == null ? onOpenLogin : onOpenAddListing,
-              ),
+            _CompactActionButton(
+              icon: user == null ? Icons.lock_open_outlined : Icons.add_box,
+              label: user == null ? 'Profil' : 'Ilan ekle',
+              onTap: user == null ? onOpenLogin : onOpenAddListing,
             ),
           ],
         ),
         if (user != null) ...[
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           _HomeSecondaryRow(
             onOpenProfile: onOpenProfile,
             onOpenMyListings: onOpenMyListings,
@@ -986,44 +977,32 @@ class _HomeSecondaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
       children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: onOpenProfile,
-            icon: const Icon(
-              Icons.account_circle_outlined,
-              color: Colors.white,
-            ),
-            label: const Text(
-              'Profilim',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
-              backgroundColor: Colors.white.withValues(alpha: 0.08),
-            ),
+        OutlinedButton.icon(
+          onPressed: onOpenProfile,
+          icon: const Icon(Icons.account_circle_outlined, color: Colors.white),
+          label: const Text(
+            'Profilim',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          ),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+            backgroundColor: Colors.white.withValues(alpha: 0.08),
           ),
         ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: onOpenMyListings,
-            icon: const Icon(Icons.analytics_outlined, color: Colors.white),
-            label: const Text(
-              'Satici paneli',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            style: OutlinedButton.styleFrom(
-              side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
-              backgroundColor: Colors.white.withValues(alpha: 0.08),
-            ),
+        OutlinedButton.icon(
+          onPressed: onOpenMyListings,
+          icon: const Icon(Icons.analytics_outlined, color: Colors.white),
+          label: const Text(
+            'Ilan paneli',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          ),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+            backgroundColor: Colors.white.withValues(alpha: 0.08),
           ),
         ),
       ],
@@ -1047,18 +1026,17 @@ class _SignalChip extends StatelessWidget {
         border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon, color: AppConstants.amber, size: 15),
           const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-              ),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ],
@@ -1067,66 +1045,34 @@ class _SignalChip extends StatelessWidget {
   }
 }
 
-class _QuickActionButton extends StatelessWidget {
-  const _QuickActionButton({
+class _CompactActionButton extends StatelessWidget {
+  const _CompactActionButton({
     required this.icon,
-    required this.title,
-    required this.subtitle,
+    required this.label,
     required this.onTap,
   });
 
   final IconData icon;
-  final String title;
-  final String subtitle;
+  final String label;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Ink(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 34,
-              height: 34,
-              decoration: BoxDecoration(
-                color: AppConstants.amber,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 18, color: AppConstants.deepGreen),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white.withValues(alpha: 0.72),
-                height: 1.25,
-              ),
-            ),
-          ],
+    return ActionChip(
+      onPressed: onTap,
+      avatar: Icon(icon, size: 18, color: AppConstants.amber),
+      label: Text(
+        label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: Colors.white,
+          fontWeight: FontWeight.w800,
         ),
       ),
+      backgroundColor: Colors.white.withValues(alpha: 0.08),
+      side: BorderSide(color: Colors.white.withValues(alpha: 0.12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
     );
   }
 }

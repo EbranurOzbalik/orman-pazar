@@ -48,6 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedCategory = AppConstants.allCategories;
   String _selectedStatus = AppConstants.allStatuses;
   String _selectedWoodType = AppConstants.allWoodTypes;
+  bool _showAdvancedFilters = false;
   DeliveryFilterOption _deliveryFilter = DeliveryFilterOption.all;
   ListingSortOption _sortOption = ListingSortOption.newest;
   String _searchText = '';
@@ -402,6 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               selectedWoodType: _selectedWoodType,
                               deliveryFilter: _deliveryFilter,
                               sortOption: _sortOption,
+                              showAdvancedFilters: _showAdvancedFilters,
                               listingCount: allListings.length,
                               visibleCount: filteredListings.length,
                               locationReadyCount: allListings
@@ -428,6 +430,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               },
                               onPriceChanged: () => setState(() {}),
                               onClearAdvancedFilters: _clearAdvancedFilters,
+                              onToggleAdvancedFilters: () {
+                                setState(() {
+                                  _showAdvancedFilters = !_showAdvancedFilters;
+                                });
+                              },
                               onOpenFavorites: () => _openFavorites(user),
                               onOpenProfile: () => _openProfile(user),
                               onOpenMyListings: () => _openMyListings(user),
@@ -493,6 +500,7 @@ class _SearchAndFilters extends StatelessWidget {
     required this.selectedWoodType,
     required this.deliveryFilter,
     required this.sortOption,
+    required this.showAdvancedFilters,
     required this.listingCount,
     required this.visibleCount,
     required this.locationReadyCount,
@@ -507,6 +515,7 @@ class _SearchAndFilters extends StatelessWidget {
     required this.onSortOptionChanged,
     required this.onPriceChanged,
     required this.onClearAdvancedFilters,
+    required this.onToggleAdvancedFilters,
     required this.onOpenFavorites,
     required this.onOpenProfile,
     required this.onOpenMyListings,
@@ -523,6 +532,7 @@ class _SearchAndFilters extends StatelessWidget {
   final String selectedWoodType;
   final DeliveryFilterOption deliveryFilter;
   final ListingSortOption sortOption;
+  final bool showAdvancedFilters;
   final int listingCount;
   final int visibleCount;
   final int locationReadyCount;
@@ -537,6 +547,7 @@ class _SearchAndFilters extends StatelessWidget {
   final ValueChanged<ListingSortOption> onSortOptionChanged;
   final VoidCallback onPriceChanged;
   final VoidCallback onClearAdvancedFilters;
+  final VoidCallback onToggleAdvancedFilters;
   final VoidCallback onOpenFavorites;
   final VoidCallback onOpenProfile;
   final VoidCallback onOpenMyListings;
@@ -665,6 +676,30 @@ class _SearchAndFilters extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: onToggleAdvancedFilters,
+            icon: Icon(
+              showAdvancedFilters
+                  ? Icons.keyboard_arrow_up
+                  : Icons.tune_outlined,
+              color: Colors.white,
+            ),
+            label: Text(
+              showAdvancedFilters
+                  ? 'Detay filtrelerini gizle'
+                  : 'Detay filtrelerini ac',
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            style: OutlinedButton.styleFrom(
+              side: BorderSide(color: Colors.white.withValues(alpha: 0.18)),
+              backgroundColor: Colors.white.withValues(alpha: 0.08),
+              minimumSize: const Size.fromHeight(44),
+            ),
+          ),
+          const SizedBox(height: 8),
           _FilterSection(
             title: 'Kategori',
             child: SizedBox(
@@ -704,97 +739,112 @@ class _SearchAndFilters extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          _FilterSection(
-            title: 'Ayrintili filtreler',
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-              ),
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _HeaderDropdownField<String>(
-                          value: selectedWoodType,
-                          items: woodTypes,
-                          labelBuilder: (value) => value,
-                          onChanged: onWoodTypeSelected,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: _HeaderDropdownField<DeliveryFilterOption>(
-                          value: deliveryFilter,
-                          items: DeliveryFilterOption.values,
-                          labelBuilder: _deliveryLabel,
-                          onChanged: onDeliveryFilterChanged,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: minPriceController,
-                          keyboardType: TextInputType.number,
-                          onChanged: (_) => onPriceChanged(),
-                          style: const TextStyle(
-                            color: AppConstants.deepGreen,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'Min fiyat',
-                            prefixIcon: Icon(Icons.south_west),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            child: showAdvancedFilters
+                ? Padding(
+                    key: const ValueKey('advanced-filters-open'),
+                    padding: const EdgeInsets.only(top: 8),
+                    child: _FilterSection(
+                      title: 'Ayrintili filtreler',
+                      child: Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.12),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: maxPriceController,
-                          keyboardType: TextInputType.number,
-                          onChanged: (_) => onPriceChanged(),
-                          style: const TextStyle(
-                            color: AppConstants.deepGreen,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          decoration: const InputDecoration(
-                            labelText: 'Max fiyat',
-                            prefixIcon: Icon(Icons.north_east),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton.icon(
-                      onPressed: onClearAdvancedFilters,
-                      icon: const Icon(
-                        Icons.refresh_outlined,
-                        color: Colors.white,
-                      ),
-                      label: const Text(
-                        'Filtreleri temizle',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
+                        padding: const EdgeInsets.all(12),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _HeaderDropdownField<String>(
+                                    value: selectedWoodType,
+                                    items: woodTypes,
+                                    labelBuilder: (value) => value,
+                                    onChanged: onWoodTypeSelected,
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child:
+                                      _HeaderDropdownField<
+                                        DeliveryFilterOption
+                                      >(
+                                        value: deliveryFilter,
+                                        items: DeliveryFilterOption.values,
+                                        labelBuilder: _deliveryLabel,
+                                        onChanged: onDeliveryFilterChanged,
+                                      ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: minPriceController,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (_) => onPriceChanged(),
+                                    style: const TextStyle(
+                                      color: AppConstants.deepGreen,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    decoration: const InputDecoration(
+                                      labelText: 'Min fiyat',
+                                      prefixIcon: Icon(Icons.south_west),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: TextField(
+                                    controller: maxPriceController,
+                                    keyboardType: TextInputType.number,
+                                    onChanged: (_) => onPriceChanged(),
+                                    style: const TextStyle(
+                                      color: AppConstants.deepGreen,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    decoration: const InputDecoration(
+                                      labelText: 'Max fiyat',
+                                      prefixIcon: Icon(Icons.north_east),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton.icon(
+                                onPressed: onClearAdvancedFilters,
+                                icon: const Icon(
+                                  Icons.refresh_outlined,
+                                  color: Colors.white,
+                                ),
+                                label: const Text(
+                                  'Filtreleri temizle',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
+                  )
+                : const SizedBox.shrink(
+                    key: ValueKey('advanced-filters-closed'),
                   ),
-                ],
-              ),
-            ),
           ),
           const SizedBox(height: 10),
           _FilterSection(
@@ -1716,16 +1766,19 @@ class _CategoryPulseSection extends StatelessWidget {
       icon: Icons.hub_outlined,
       title: 'Kategori nabzi',
       subtitle: 'Bugun listede en cok gorunen urun gruplari.',
-      child: Row(
-        children: items.map((item) {
-          final isLast = item == items.last;
-          return Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(right: isLast ? 0 : 10),
-              child: _CategoryPulseCard(item: item),
-            ),
-          );
-        }).toList(),
+      child: SizedBox(
+        height: 120,
+        child: ListView.separated(
+          scrollDirection: Axis.horizontal,
+          itemCount: items.length,
+          separatorBuilder: (_, _) => const SizedBox(width: 10),
+          itemBuilder: (context, index) {
+            return SizedBox(
+              width: 122,
+              child: _CategoryPulseCard(item: items[index]),
+            );
+          },
+        ),
       ),
     );
   }
